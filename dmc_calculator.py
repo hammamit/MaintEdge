@@ -73,11 +73,11 @@ DO328_100_DATA = [
     {"inspection": "SSI-5",           "int1": 60,   "param1": "Months", "int2": None,  "param2": None,      "mh": 80,    "mat": 1096.10,    "category": "Structural Sampling (SSI)"},
     {"inspection": "SSI-10",          "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 220,   "mat": 2991.68,    "category": "Structural Sampling (SSI)"},
     {"inspection": "SSI-10/5",        "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Structural Sampling (SSI)"},
-    {"inspection": "Propeller Change",      "int1": None, "param1": None,     "int2": 6000,  "param2": "FC",  "mh": 40,    "mat": 90000.00,   "category": "Heavy Components"},
-    {"inspection": "Engine Change (1EA)",   "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",  "mh": 180,   "mat": 1200000.00, "category": "Heavy Components"},
-    {"inspection": "Landing Gear Overhaul", "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",  "mh": 85,    "mat": 456801.70,  "category": "Heavy Components"},
-    {"inspection": "Brakes",                "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",  "mh": 2,     "mat": 93084.12,   "category": "Heavy Components"},
-    {"inspection": "APU Overhaul",          "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",  "mh": 20,    "mat": 220000.00,  "category": "Heavy Components"},
+    {"inspection": "Propeller Change (2EA)",  "int1": None, "param1": None,     "int2": 6000,  "param2": "FC",  "mh": 80,    "mat": 180000.00,  "category": "Propellers"},
+    {"inspection": "Engine Change (2EA)",    "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",  "mh": 360,   "mat": 2400000.00, "category": "Engines"},
+    {"inspection": "Landing Gear Overhaul",  "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",  "mh": 85,    "mat": 456801.70,  "category": "Landing Gear"},
+    {"inspection": "Brakes",                 "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",  "mh": 2,     "mat": 93084.12,   "category": "Landing Gear"},
+    {"inspection": "APU Overhaul",           "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",  "mh": 20,    "mat": 220000.00,  "category": "APU"},
 ]
 
 TIME_CONTROLLED_FLAT_RATE = 40.0
@@ -455,7 +455,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
-    page = st.radio("Navigation", ["Home", "Setup", "Calculate", "Report"], label_visibility="collapsed")
+    page = st.radio("Navigation", ["Home", "Setup & Calculate", "Report"], label_visibility="collapsed")
     st.session_state.page = page
     st.markdown("---")
     st.markdown("""
@@ -555,15 +555,15 @@ if st.session_state.page == "Home":
 
 
 # ================================================================
-# SETUP
+# SETUP & CALCULATE (merged)
 # ================================================================
-elif st.session_state.page == "Setup":
+elif st.session_state.page == "Setup & Calculate":
 
     st.markdown(f"""
     <div class="hero" style="padding:2rem 2.5rem 1.5rem 2.5rem;">
-        <div class="hero-brand">{svg_icon("settings", 14)} Configuration</div>
-        <div class="hero-title" style="font-size:2rem;">Operational <span>Setup</span></div>
-        <div class="hero-sub">Define your aircraft, operator, utilization profile, and operating environment.</div>
+        <div class="hero-brand">{svg_icon("settings", 14)} Configuration & Analysis</div>
+        <div class="hero-title" style="font-size:2rem;">Setup & <span>Calculate</span></div>
+        <div class="hero-sub">Define your operational parameters, then calculate DMC with one click.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -624,12 +624,15 @@ elif st.session_state.page == "Setup":
         st.markdown(f'<div class="info-box info-slate">{lr}</div>', unsafe_allow_html=True)
         s["stol_pct"] = st.slider("STOL Operations (%)", 0, 100, s["stol_pct"], 5)
 
-    # Summary
-    st.markdown("---")
+    st.session_state.setup = s
+
+    # Compute factors
     gf = 1.0 + (s["gravel_pct"] / 100) * 0.15
     sf = 1.0 + (s["stol_pct"] / 100) * 0.10
     combined = ef * gf * sf
 
+    # Summary bar
+    st.markdown("---")
     st.markdown(f"""
     <div class="metrics">
         <div class="metric"><div class="metric-label">Aircraft</div><div class="metric-val" style="font-size:1rem;">{s["aircraft_type"]}</div><div class="metric-unit">{s["operator"] or "N/A"} | {s["base_country"] or "N/A"}</div></div>
@@ -638,115 +641,144 @@ elif st.session_state.page == "Setup":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown(f'<div class="info-box info-green">{svg_icon("check", 16)} <strong>Setup complete.</strong> Navigate to <strong>Calculate</strong> to compute DMC.</div>', unsafe_allow_html=True)
-    st.session_state.setup = s
+    st.markdown("<br>", unsafe_allow_html=True)
 
+    # ── CALCULATE BUTTON ──
+    col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+    with col_btn2:
+        calculate_pressed = st.button(
+            "CALCULATE DMC",
+            use_container_width=True,
+            type="primary",
+        )
 
-# ================================================================
-# CALCULATE
-# ================================================================
-elif st.session_state.page == "Calculate":
+    if calculate_pressed:
+        st.session_state.calculated = True
 
-    st.markdown(f"""
-    <div class="hero" style="padding:2rem 2.5rem 1.5rem 2.5rem;">
-        <div class="hero-brand">{svg_icon("chart", 14)} DMC Engine</div>
-        <div class="hero-title" style="font-size:2rem;">Cost <span>Calculation</span></div>
-        <div class="hero-sub">Direct Maintenance Cost breakdown for Do 328-100 based on your operational setup.</div>
-    </div>
-    """, unsafe_allow_html=True)
+    if st.session_state.get("calculated", False):
+        with st.spinner("Computing DMC for all maintenance items..."):
+            results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
+                s["apu_hrs_per_year"], s["labour_rate"], ef, gf, sf)
+            df = pd.DataFrame(results)
+            st.session_state.calc_results = results
 
-    s = st.session_state.setup
-    if s["fh_per_year"] == 0 or s["fc_per_year"] == 0:
-        st.error("Please complete the Setup page first.")
-        st.stop()
+        total_labour = df["DMC Labour (EUR/FH)"].sum() + TIME_CONTROLLED_FLAT_RATE
+        total_material = df["DMC Material (EUR/FH)"].sum()
+        total_dmc = total_labour + total_material
 
-    ef = ENVIRONMENT_FACTORS[s["environment"]]
-    gf = 1.0 + (s["gravel_pct"] / 100) * 0.15
-    sf = 1.0 + (s["stol_pct"] / 100) * 0.10
+        st.markdown("---")
 
-    results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
-        s["apu_hrs_per_year"], s["labour_rate"], ef, gf, sf)
-    df = pd.DataFrame(results)
+        # Result metrics with highlighted total
+        st.markdown(f"""
+        <div class="metrics">
+            <div class="metric" style="border: 1px solid rgba(34,197,94,0.3); box-shadow: 0 4px 20px rgba(34,197,94,0.15);">
+                <div class="metric-label" style="color:#4ade80;">Total DMC</div>
+                <div class="metric-val" style="font-size:1.6rem;">EUR {total_dmc:,.2f}</div>
+                <div class="metric-unit">per Flight Hour</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Labour DMC</div>
+                <div class="metric-val">EUR {total_labour:,.2f}</div>
+                <div class="metric-unit">per Flight Hour</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Material DMC</div>
+                <div class="metric-val">EUR {total_material:,.2f}</div>
+                <div class="metric-unit">per Flight Hour</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Annual DMC</div>
+                <div class="metric-val">EUR {total_dmc * s["fh_per_year"]:,.0f}</div>
+                <div class="metric-unit">at {s["fh_per_year"]:,} FH/yr</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    total_labour = df["DMC Labour (EUR/FH)"].sum() + TIME_CONTROLLED_FLAT_RATE
-    total_material = df["DMC Material (EUR/FH)"].sum()
-    total_dmc = total_labour + total_material
+        # Labour vs Material split bar
+        labour_pct = (total_labour / total_dmc * 100) if total_dmc > 0 else 0
+        material_pct = 100 - labour_pct
+        st.markdown(f"""
+        <div style="margin:1.5rem 0;">
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; color:#475569; margin-bottom:4px;">
+                <span>Labour: {labour_pct:.1f}%</span>
+                <span>Material: {material_pct:.1f}%</span>
+            </div>
+            <div style="height:10px; border-radius:5px; background:#E2E8F0; overflow:hidden; display:flex;">
+                <div style="width:{labour_pct}%; background:linear-gradient(90deg, #2563EB, #3B82F6); border-radius:5px 0 0 5px;"></div>
+                <div style="width:{material_pct}%; background:linear-gradient(90deg, #22D3EE, #06B6D4); border-radius:0 5px 5px 0;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="metrics">
-        <div class="metric"><div class="metric-label">Total DMC</div><div class="metric-val">EUR {total_dmc:,.2f}</div><div class="metric-unit">per Flight Hour</div></div>
-        <div class="metric"><div class="metric-label">Labour DMC</div><div class="metric-val">EUR {total_labour:,.2f}</div><div class="metric-unit">per Flight Hour</div></div>
-        <div class="metric"><div class="metric-label">Material DMC</div><div class="metric-val">EUR {total_material:,.2f}</div><div class="metric-unit">per Flight Hour</div></div>
-        <div class="metric"><div class="metric-label">Annual DMC</div><div class="metric-val">EUR {total_dmc * s["fh_per_year"]:,.0f}</div><div class="metric-unit">at {s["fh_per_year"]:,} FH/yr</div></div>
-    </div>
-    """, unsafe_allow_html=True)
+        # Category breakdown
+        st.markdown(f'<div class="sec-head">{svg_icon("layers", 20)} <span>Category</span> Breakdown</div>', unsafe_allow_html=True)
 
-    # Category summary
-    st.markdown(f'<div class="sec-head">{svg_icon("layers", 20)} <span>Category</span> Breakdown</div>', unsafe_allow_html=True)
+        cat_sum = df.groupby("Category").agg({
+            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
+        }).reset_index()
+        tc_row = pd.DataFrame([{"Category": "Time Controlled Items",
+            "DMC Labour (EUR/FH)": TIME_CONTROLLED_FLAT_RATE, "DMC Material (EUR/FH)": 0.0,
+            "DMC Total (EUR/FH)": TIME_CONTROLLED_FLAT_RATE}])
+        cat_sum = pd.concat([cat_sum, tc_row], ignore_index=True).sort_values("DMC Total (EUR/FH)", ascending=False)
 
-    cat_sum = df.groupby("Category").agg({
-        "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
-    }).reset_index()
-    tc_row = pd.DataFrame([{"Category": "Time Controlled Items",
-        "DMC Labour (EUR/FH)": TIME_CONTROLLED_FLAT_RATE, "DMC Material (EUR/FH)": 0.0,
-        "DMC Total (EUR/FH)": TIME_CONTROLLED_FLAT_RATE}])
-    cat_sum = pd.concat([cat_sum, tc_row], ignore_index=True).sort_values("DMC Total (EUR/FH)", ascending=False)
+        col_c1, col_c2 = st.columns(2)
+        with col_c1:
+            fig_pie = go.Figure(data=[go.Pie(
+                labels=cat_sum["Category"], values=cat_sum["DMC Total (EUR/FH)"].round(2),
+                hole=0.5, marker=dict(colors=["#2563EB", "#0891B2", "#059669", "#D97706", "#7C3AED", "#DC2626", "#475569", "#EC4899", "#F59E0B"]),
+                textinfo="label+percent", textfont_size=10, textposition="outside",
+            )])
+            fig_pie.update_layout(title=dict(text="DMC Distribution by Category", font=dict(size=13, family="Plus Jakarta Sans")),
+                height=420, margin=dict(t=50, b=20, l=20, r=20), showlegend=False,
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig_pie, use_container_width=True)
 
-    col_c1, col_c2 = st.columns(2)
-    with col_c1:
-        fig_pie = go.Figure(data=[go.Pie(
-            labels=cat_sum["Category"], values=cat_sum["DMC Total (EUR/FH)"].round(2),
-            hole=0.5, marker=dict(colors=["#2563EB", "#0891B2", "#059669", "#D97706", "#7C3AED", "#DC2626", "#475569", "#EC4899", "#F59E0B"]),
-            textinfo="label+percent", textfont_size=10, textposition="outside",
-        )])
-        fig_pie.update_layout(title=dict(text="DMC Distribution by Category", font=dict(size=13, family="Plus Jakarta Sans")),
-            height=420, margin=dict(t=50, b=20, l=20, r=20), showlegend=False,
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig_pie, use_container_width=True)
+        with col_c2:
+            fig_bar = go.Figure()
+            fig_bar.add_trace(go.Bar(name="Labour", x=cat_sum["Category"], y=cat_sum["DMC Labour (EUR/FH)"].round(2), marker_color="#2563EB"))
+            fig_bar.add_trace(go.Bar(name="Material", x=cat_sum["Category"], y=cat_sum["DMC Material (EUR/FH)"].round(2), marker_color="#22D3EE"))
+            fig_bar.update_layout(title=dict(text="Labour vs Material (EUR/FH)", font=dict(size=13, family="Plus Jakarta Sans")),
+                barmode="stack", height=420, margin=dict(t=50, b=100, l=50, r=20),
+                xaxis=dict(tickangle=-40, tickfont=dict(size=9)),
+                yaxis=dict(title=dict(text="EUR/FH", font=dict(size=11))),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig_bar, use_container_width=True)
 
-    with col_c2:
-        fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(name="Labour", x=cat_sum["Category"], y=cat_sum["DMC Labour (EUR/FH)"].round(2), marker_color="#2563EB"))
-        fig_bar.add_trace(go.Bar(name="Material", x=cat_sum["Category"], y=cat_sum["DMC Material (EUR/FH)"].round(2), marker_color="#22D3EE"))
-        fig_bar.update_layout(title=dict(text="Labour vs Material (EUR/FH)", font=dict(size=13, family="Plus Jakarta Sans")),
-            barmode="stack", height=420, margin=dict(t=50, b=100, l=50, r=20),
-            xaxis=dict(tickangle=-40, tickfont=dict(size=9)),
-            yaxis=dict(title=dict(text="EUR/FH", font=dict(size=11))),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig_bar, use_container_width=True)
+        # Category table
+        st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>Category</span> Summary</div>', unsafe_allow_html=True)
+        cat_disp = cat_sum.copy()
+        cat_disp["% of Total"] = (cat_disp["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+        st.dataframe(cat_disp.style.format({
+            "DMC Labour (EUR/FH)": "EUR {:.2f}", "DMC Material (EUR/FH)": "EUR {:.2f}",
+            "DMC Total (EUR/FH)": "EUR {:.2f}", "% of Total": "{:.1f}%"}),
+            use_container_width=True, hide_index=True)
 
-    # Category table
-    st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>Category</span> Summary</div>', unsafe_allow_html=True)
-    cat_disp = cat_sum.copy()
-    cat_disp["% of Total"] = (cat_disp["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
-    st.dataframe(cat_disp.style.format({
-        "DMC Labour (EUR/FH)": "EUR {:.2f}", "DMC Material (EUR/FH)": "EUR {:.2f}",
-        "DMC Total (EUR/FH)": "EUR {:.2f}", "% of Total": "{:.1f}%"}),
-        use_container_width=True, hide_index=True)
+        # Detail table
+        st.markdown(f'<div class="sec-head">{svg_icon("search", 20)} <span>Detailed</span> Item Breakdown</div>', unsafe_allow_html=True)
+        categories = ["All"] + sorted(df["Category"].unique().tolist())
+        sel_cat = st.selectbox("Filter by Category", categories)
+        df_show = df if sel_cat == "All" else df[df["Category"] == sel_cat]
 
-    # Detail table
-    st.markdown(f'<div class="sec-head">{svg_icon("search", 20)} <span>Detailed</span> Item Breakdown</div>', unsafe_allow_html=True)
-    categories = ["All"] + sorted(df["Category"].unique().tolist())
-    sel_cat = st.selectbox("Filter by Category", categories)
-    df_show = df if sel_cat == "All" else df[df["Category"] == sel_cat]
+        st.dataframe(df_show.style.format({
+            "Material (EUR)": "EUR {:,.2f}", "Occ/yr (Cal)": "{:.4f}", "Occ/yr (Usage)": "{:.4f}",
+            "Occ/yr (Used)": "{:.4f}", "DMC Labour (EUR/FH)": "EUR {:.4f}",
+            "DMC Material (EUR/FH)": "EUR {:.4f}", "DMC Total (EUR/FH)": "EUR {:.4f}"}),
+            use_container_width=True, hide_index=True, height=600)
 
-    st.dataframe(df_show.style.format({
-        "Material (EUR)": "EUR {:,.2f}", "Occ/yr (Cal)": "{:.4f}", "Occ/yr (Usage)": "{:.4f}",
-        "Occ/yr (Used)": "{:.4f}", "DMC Labour (EUR/FH)": "EUR {:.4f}",
-        "DMC Material (EUR/FH)": "EUR {:.4f}", "DMC Total (EUR/FH)": "EUR {:.4f}"}),
-        use_container_width=True, hide_index=True, height=600)
+        st.markdown(f'<div class="info-box info-amber">Time Controlled Items: Flat rate of <strong>EUR {TIME_CONTROLLED_FLAT_RATE:.0f}/FH</strong> added to total (not in detail table).</div>', unsafe_allow_html=True)
 
-    st.markdown(f'<div class="info-box info-amber">Time Controlled Items: Flat rate of <strong>EUR {TIME_CONTROLLED_FLAT_RATE:.0f}/FH</strong> added to total (not in detail table).</div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown(f"""
-    <div class="info-box info-slate">
-        <strong>Parameters:</strong> {s["aircraft_type"]} | {s["operator"] or "N/A"} | {s["base_country"] or "N/A"}<br>
-        Utilization: {s["fh_per_year"]:,} FH/yr | {s["fc_per_year"]:,} FC/yr | APU: {s["apu_hrs_per_year"]:,} hrs/yr | Labour: EUR {s["labour_rate"]:.2f}/hr<br>
-        Factors: Env x{ef:.2f} | Gravel x{gf:.2f} | STOL x{sf:.2f} | Combined x{ef*gf*sf:.3f}
-    </div>
-    """, unsafe_allow_html=True)
+    else:
+        # Pre-calculation state
+        st.markdown("""
+        <div style="text-align:center; padding:3rem 0; color:#94A3B8;">
+            <div style="font-size:3rem; margin-bottom:0.5rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div style="font-size:1.1rem; font-weight:600; color:#64748B;">Ready to calculate</div>
+            <div style="font-size:0.85rem; margin-top:0.25rem;">Verify your parameters above, then press CALCULATE DMC</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # ================================================================
@@ -758,7 +790,7 @@ elif st.session_state.page == "Report":
     <div class="hero" style="padding:2rem 2.5rem 1.5rem 2.5rem;">
         <div class="hero-brand">{svg_icon("download", 14)} Export</div>
         <div class="hero-title" style="font-size:2rem;">DMC <span>Report</span></div>
-        <div class="hero-sub">Download the complete DMC breakdown for your records.</div>
+        <div class="hero-sub">Generate and download professional DMC reports in PDF and Excel formats.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -770,6 +802,7 @@ elif st.session_state.page == "Report":
     ef = ENVIRONMENT_FACTORS[s["environment"]]
     gf = 1.0 + (s["gravel_pct"] / 100) * 0.15
     sf = 1.0 + (s["stol_pct"] / 100) * 0.10
+    combined = ef * gf * sf
 
     results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
         s["apu_hrs_per_year"], s["labour_rate"], ef, gf, sf)
@@ -784,18 +817,486 @@ elif st.session_state.page == "Report":
         <div class="metric"><div class="metric-label">Total DMC</div><div class="metric-val">EUR {total_dmc:,.2f} /FH</div></div>
         <div class="metric"><div class="metric-label">Labour</div><div class="metric-val">EUR {total_labour:,.2f} /FH</div></div>
         <div class="metric"><div class="metric-label">Material</div><div class="metric-val">EUR {total_material:,.2f} /FH</div></div>
+        <div class="metric"><div class="metric-label">Annual</div><div class="metric-val">EUR {total_dmc * s['fh_per_year']:,.0f}</div></div>
     </div>
     """, unsafe_allow_html=True)
 
-    csv_data = df.to_csv(index=False)
     op_name = s["operator"].replace(" ", "_") if s["operator"] else "Generic"
+    base_filename = f"MaintEdge_DMC_{s['aircraft_type'].replace(' ', '_')}_{op_name}_{s['fh_per_year']}FH"
+
+    # ── EXCEL EXPORT ──
+    st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>Excel</span> Report</div>', unsafe_allow_html=True)
+
+    def generate_excel():
+        import io
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+
+        wb = Workbook()
+
+        # --- Sheet 1: Summary ---
+        ws1 = wb.active
+        ws1.title = "DMC Summary"
+
+        # Colors
+        navy_fill = PatternFill(start_color="0A1628", end_color="0A1628", fill_type="solid")
+        blue_fill = PatternFill(start_color="2563EB", end_color="2563EB", fill_type="solid")
+        light_blue_fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+        header_fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+        alt_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+        white_font = Font(name="Arial", color="FFFFFF", bold=True)
+        blue_font = Font(name="Arial", color="2563EB", bold=True, size=11)
+        title_font = Font(name="Arial", color="FFFFFF", bold=True, size=16)
+        sub_font = Font(name="Arial", color="94A3B8", size=10)
+        normal_font = Font(name="Arial", size=10)
+        bold_font = Font(name="Arial", size=10, bold=True)
+        thin_border = Border(
+            left=Side(style="thin", color="E2E8F0"),
+            right=Side(style="thin", color="E2E8F0"),
+            top=Side(style="thin", color="E2E8F0"),
+            bottom=Side(style="thin", color="E2E8F0"),
+        )
+
+        # Title banner
+        for col in range(1, 9):
+            ws1.cell(row=1, column=col).fill = navy_fill
+            ws1.cell(row=2, column=col).fill = navy_fill
+            ws1.cell(row=3, column=col).fill = navy_fill
+        ws1.merge_cells("A1:H1")
+        ws1.cell(row=1, column=1, value="MaintEdge -- DMC Report").font = title_font
+        ws1.merge_cells("A2:H2")
+        ws1.cell(row=2, column=1, value="Deutsche Aircraft GmbH -- Direct Maintenance Cost Calculator").font = sub_font
+        ws1.merge_cells("A3:H3")
+        from datetime import datetime
+        ws1.cell(row=3, column=1, value=f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}").font = sub_font
+
+        # Parameters section
+        row = 5
+        ws1.cell(row=row, column=1, value="OPERATIONAL PARAMETERS").font = blue_font
+        row = 6
+        param_data = [
+            ("Aircraft Type", s["aircraft_type"]),
+            ("Operator", s["operator"] or "N/A"),
+            ("Base Country", s["base_country"] or "N/A"),
+            ("FH / Year", f"{s['fh_per_year']:,}"),
+            ("FC / Year", f"{s['fc_per_year']:,}"),
+            ("APU Hrs / Year", f"{s['apu_hrs_per_year']:,}"),
+            ("FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"),
+            ("Labour Rate (EUR/hr)", f"{s['labour_rate']:.2f}"),
+            ("Environment", s["environment"]),
+            ("Environment Factor", f"x{ef:.2f}"),
+            ("Gravel Operations", f"{s['gravel_pct']}% (x{gf:.2f})"),
+            ("STOL Operations", f"{s['stol_pct']}% (x{sf:.2f})"),
+            ("Combined Factor", f"x{combined:.3f}"),
+        ]
+        for param, val in param_data:
+            ws1.cell(row=row, column=1, value=param).font = bold_font
+            ws1.cell(row=row, column=3, value=val).font = normal_font
+            if row % 2 == 0:
+                for c in range(1, 5):
+                    ws1.cell(row=row, column=c).fill = alt_fill
+            row += 1
+
+        # Totals
+        row += 1
+        ws1.cell(row=row, column=1, value="DMC RESULTS").font = blue_font
+        row += 1
+        for label, val in [("Total DMC (EUR/FH)", total_dmc), ("Labour DMC (EUR/FH)", total_labour),
+                           ("Material DMC (EUR/FH)", total_material), ("Annual DMC (EUR)", total_dmc * s["fh_per_year"])]:
+            ws1.cell(row=row, column=1, value=label).font = bold_font
+            cell = ws1.cell(row=row, column=3, value=round(val, 2))
+            cell.font = Font(name="Arial", size=11, bold=True, color="2563EB")
+            cell.number_format = '#,##0.00'
+            row += 1
+
+        ws1.column_dimensions["A"].width = 22
+        ws1.column_dimensions["B"].width = 5
+        ws1.column_dimensions["C"].width = 25
+        ws1.column_dimensions["D"].width = 15
+
+        # --- Sheet 2: Category Summary ---
+        ws2 = wb.create_sheet("Category Summary")
+        cat_sum = df.groupby("Category").agg({
+            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
+        }).reset_index()
+        tc_r = pd.DataFrame([{"Category": "Time Controlled Items",
+            "DMC Labour (EUR/FH)": TIME_CONTROLLED_FLAT_RATE, "DMC Material (EUR/FH)": 0.0,
+            "DMC Total (EUR/FH)": TIME_CONTROLLED_FLAT_RATE}])
+        cat_sum = pd.concat([cat_sum, tc_r], ignore_index=True).sort_values("DMC Total (EUR/FH)", ascending=False)
+        cat_sum["% of Total"] = (cat_sum["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+
+        headers2 = ["Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "% of Total"]
+        for c, h in enumerate(headers2, 1):
+            cell = ws2.cell(row=1, column=c, value=h)
+            cell.font = white_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center")
+        for r_idx, row_data in enumerate(cat_sum.itertuples(index=False), 2):
+            ws2.cell(row=r_idx, column=1, value=row_data[0]).font = normal_font
+            for c in range(1, 4):
+                cell = ws2.cell(row=r_idx, column=c+1, value=round(row_data[c], 2))
+                cell.font = normal_font
+                cell.number_format = '#,##0.00'
+                cell.alignment = Alignment(horizontal="center")
+            ws2.cell(row=r_idx, column=5, value=round(row_data[4], 1)).number_format = '0.0'
+            if r_idx % 2 == 0:
+                for c in range(1, 6):
+                    ws2.cell(row=r_idx, column=c).fill = alt_fill
+        for c in range(1, 6):
+            ws2.column_dimensions[get_column_letter(c)].width = 22
+
+        # --- Sheet 3: Full Detail ---
+        ws3 = wb.create_sheet("Detailed Breakdown")
+        detail_cols = ["Category", "Inspection", "Interval 1", "Interval 2", "MH",
+                       "Material (EUR)", "Occ/yr (Used)", "Driver",
+                       "DMC Labour (EUR/FH)", "DMC Material (EUR/FH)", "DMC Total (EUR/FH)"]
+        for c, h in enumerate(detail_cols, 1):
+            cell = ws3.cell(row=1, column=c, value=h)
+            cell.font = white_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center")
+        for r_idx, (_, row_data) in enumerate(df.iterrows(), 2):
+            for c, col_name in enumerate(detail_cols, 1):
+                val = row_data[col_name]
+                cell = ws3.cell(row=r_idx, column=c, value=val)
+                cell.font = normal_font
+                if isinstance(val, float):
+                    cell.number_format = '#,##0.0000' if "EUR/FH" in col_name else '#,##0.00'
+                cell.alignment = Alignment(horizontal="center") if c > 2 else Alignment()
+            if r_idx % 2 == 0:
+                for c in range(1, len(detail_cols) + 1):
+                    ws3.cell(row=r_idx, column=c).fill = alt_fill
+        for c in range(1, len(detail_cols) + 1):
+            ws3.column_dimensions[get_column_letter(c)].width = 20
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        return buffer.getvalue()
+
+    excel_data = generate_excel()
     st.download_button(
-        label="Download Full DMC Report (CSV)",
-        data=csv_data,
-        file_name=f"MaintEdge_DMC_{s['aircraft_type'].replace(' ', '_')}_{op_name}_{s['fh_per_year']}FH.csv",
-        mime="text/csv",
+        label="Download Excel Report (.xlsx)",
+        data=excel_data,
+        file_name=f"{base_filename}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
+    # ── PDF EXPORT ──
+    st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>PDF</span> Report</div>', unsafe_allow_html=True)
+
+    def generate_pdf():
+        import io
+        from datetime import datetime
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import mm, cm
+        from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable, KeepTogether
+        from reportlab.pdfgen import canvas as pdfcanvas
+
+        buffer = io.BytesIO()
+
+        # Custom colors
+        NAVY = colors.HexColor("#0A1628")
+        DARK_BLUE = colors.HexColor("#1E293B")
+        BRAND_BLUE = colors.HexColor("#2563EB")
+        LIGHT_BLUE = colors.HexColor("#EFF6FF")
+        CYAN = colors.HexColor("#22D3EE")
+        SLATE_600 = colors.HexColor("#475569")
+        SLATE_400 = colors.HexColor("#94A3B8")
+        SLATE_200 = colors.HexColor("#E2E8F0")
+        SLATE_100 = colors.HexColor("#F1F5F9")
+        SLATE_50 = colors.HexColor("#F8FAFC")
+        GREEN = colors.HexColor("#059669")
+        WHITE = colors.white
+
+        page_w, page_h = A4
+
+        # Page template with header/footer
+        class PDFTemplate:
+            def __init__(self, doc):
+                self.doc = doc
+
+            def on_page(self, canvas, doc):
+                canvas.saveState()
+                # Header line
+                canvas.setStrokeColor(BRAND_BLUE)
+                canvas.setLineWidth(2)
+                canvas.line(15*mm, page_h - 12*mm, page_w - 15*mm, page_h - 12*mm)
+
+                # Header text
+                canvas.setFont("Helvetica-Bold", 7)
+                canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm, page_h - 10*mm, "MAINTEDGE  |  DIRECT MAINTENANCE COST REPORT")
+                canvas.drawRightString(page_w - 15*mm, page_h - 10*mm, "DEUTSCHE AIRCRAFT GMBH")
+
+                # Footer
+                canvas.setStrokeColor(SLATE_200)
+                canvas.setLineWidth(0.5)
+                canvas.line(15*mm, 14*mm, page_w - 15*mm, 14*mm)
+                canvas.setFont("Helvetica", 6.5)
+                canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm, 10*mm, "CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
+                canvas.drawRightString(page_w - 15*mm, 10*mm, f"Page {doc.page}")
+                canvas.restoreState()
+
+            def on_first_page(self, canvas, doc):
+                canvas.saveState()
+
+                # Full-width navy header banner
+                canvas.setFillColor(NAVY)
+                canvas.rect(0, page_h - 55*mm, page_w, 55*mm, fill=1, stroke=0)
+
+                # Accent line at bottom of banner
+                canvas.setStrokeColor(BRAND_BLUE)
+                canvas.setLineWidth(2.5)
+                canvas.line(0, page_h - 55*mm, page_w, page_h - 55*mm)
+
+                # Brand text
+                canvas.setFont("Helvetica", 7)
+                canvas.setFillColor(SLATE_400)
+                canvas.drawString(20*mm, page_h - 15*mm, "DEUTSCHE AIRCRAFT GMBH")
+
+                # Title
+                canvas.setFont("Helvetica-Bold", 26)
+                canvas.setFillColor(WHITE)
+                canvas.drawString(20*mm, page_h - 28*mm, "MaintEdge")
+
+                # Subtitle
+                canvas.setFont("Helvetica", 13)
+                canvas.setFillColor(colors.HexColor("#CBD5E1"))
+                canvas.drawString(20*mm, page_h - 36*mm, "Direct Maintenance Cost Report")
+
+                # Meta info
+                canvas.setFont("Helvetica", 8)
+                canvas.setFillColor(SLATE_400)
+                canvas.drawString(20*mm, page_h - 46*mm,
+                    f"{s['aircraft_type']}  |  {s['operator'] or 'N/A'}  |  {s['base_country'] or 'N/A'}  |  {datetime.now().strftime('%d %B %Y')}")
+
+                # Right side: total DMC highlight box
+                box_x = page_w - 70*mm
+                box_y = page_h - 48*mm
+                canvas.setFillColor(colors.HexColor("#162240"))
+                canvas.roundRect(box_x, box_y, 52*mm, 28*mm, 3*mm, fill=1, stroke=0)
+                canvas.setStrokeColor(colors.HexColor("#2563EB50"))
+                canvas.setLineWidth(0.5)
+                canvas.roundRect(box_x, box_y, 52*mm, 28*mm, 3*mm, fill=0, stroke=1)
+
+                canvas.setFont("Helvetica", 6.5)
+                canvas.setFillColor(colors.HexColor("#60A5FA"))
+                canvas.drawCentredString(box_x + 26*mm, box_y + 21*mm, "TOTAL DMC")
+                canvas.setFont("Helvetica-Bold", 16)
+                canvas.setFillColor(WHITE)
+                canvas.drawCentredString(box_x + 26*mm, box_y + 11*mm, f"EUR {total_dmc:,.2f}")
+                canvas.setFont("Helvetica", 7)
+                canvas.setFillColor(SLATE_400)
+                canvas.drawCentredString(box_x + 26*mm, box_y + 4*mm, "per Flight Hour")
+
+                # Footer on first page too
+                canvas.setStrokeColor(SLATE_200)
+                canvas.setLineWidth(0.5)
+                canvas.line(15*mm, 14*mm, page_w - 15*mm, 14*mm)
+                canvas.setFont("Helvetica", 6.5)
+                canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm, 10*mm, "CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
+                canvas.drawRightString(page_w - 15*mm, 10*mm, f"Page {doc.page}")
+
+                canvas.restoreState()
+
+        tmpl = PDFTemplate(None)
+
+        doc = SimpleDocTemplate(buffer, pagesize=A4,
+            topMargin=60*mm, bottomMargin=20*mm, leftMargin=15*mm, rightMargin=15*mm)
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name="SH", fontName="Helvetica-Bold", fontSize=12,
+            textColor=NAVY, spaceBefore=10, spaceAfter=6))
+        styles.add(ParagraphStyle(name="SH2", fontName="Helvetica-Bold", fontSize=10,
+            textColor=BRAND_BLUE, spaceBefore=8, spaceAfter=4))
+        styles.add(ParagraphStyle(name="Body9", fontName="Helvetica", fontSize=9,
+            textColor=SLATE_600, spaceAfter=3, leading=13))
+        styles.add(ParagraphStyle(name="Small", fontName="Helvetica", fontSize=7.5,
+            textColor=SLATE_400, spaceAfter=2))
+
+        story = []
+
+        # ── Section 1: Operational Parameters ──
+        story.append(Paragraph("1. Operational Parameters", styles["SH"]))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=6))
+
+        param_rows = [
+            ["Parameter", "Value", "Parameter", "Value"],
+            ["Aircraft Type", s["aircraft_type"], "Operator", s["operator"] or "N/A"],
+            ["Base Country", s["base_country"] or "N/A", "Labour Rate", f"EUR {s['labour_rate']:.2f}/hr"],
+            ["FH / Year", f"{s['fh_per_year']:,}", "FC / Year", f"{s['fc_per_year']:,}"],
+            ["APU Hrs / Year", f"{s['apu_hrs_per_year']:,}", "FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"],
+            ["Environment", s["environment"], "Env. Factor", f"x{ef:.2f}"],
+            ["Gravel Ops", f"{s['gravel_pct']}% (x{gf:.2f})", "STOL Ops", f"{s['stol_pct']}% (x{sf:.2f})"],
+            ["Combined Factor", f"x{combined:.3f}", "", ""],
+        ]
+        pt = Table(param_rows, colWidths=[38*mm, 42*mm, 38*mm, 42*mm])
+        pt.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8.5),
+            ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
+            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
+            ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
+            ("FONTNAME", (2, 1), (2, -1), "Helvetica-Bold"),
+            ("TEXTCOLOR", (0, 1), (0, -1), DARK_BLUE),
+            ("TEXTCOLOR", (2, 1), (2, -1), DARK_BLUE),
+            ("TEXTCOLOR", (1, 1), (1, -1), SLATE_600),
+            ("TEXTCOLOR", (3, 1), (3, -1), SLATE_600),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, SLATE_50]),
+            ("GRID", (0, 0), (-1, -1), 0.4, SLATE_200),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        story.append(pt)
+        story.append(Spacer(1, 8*mm))
+
+        # ── Section 2: DMC Summary ──
+        story.append(Paragraph("2. DMC Summary", styles["SH"]))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=6))
+
+        labour_pct_val = (total_labour / total_dmc * 100) if total_dmc > 0 else 0
+        material_pct_val = 100 - labour_pct_val
+
+        sum_rows = [
+            ["Component", "EUR / FH", "EUR / Year", "% of Total"],
+            ["Total DMC", f"{total_dmc:,.2f}", f"{total_dmc * s['fh_per_year']:,.0f}", "100.0%"],
+            ["Labour DMC", f"{total_labour:,.2f}", f"{total_labour * s['fh_per_year']:,.0f}", f"{labour_pct_val:.1f}%"],
+            ["Material DMC", f"{total_material:,.2f}", f"{total_material * s['fh_per_year']:,.0f}", f"{material_pct_val:.1f}%"],
+            [f"Time Controlled (flat)", f"{TIME_CONTROLLED_FLAT_RATE:.2f}", f"{TIME_CONTROLLED_FLAT_RATE * s['fh_per_year']:,.0f}", f"{(TIME_CONTROLLED_FLAT_RATE/total_dmc*100):.1f}%"],
+        ]
+        st2 = Table(sum_rows, colWidths=[50*mm, 35*mm, 40*mm, 30*mm])
+        st2.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
+            # Total row highlight
+            ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#EFF6FF")),
+            ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
+            ("TEXTCOLOR", (1, 1), (1, 1), BRAND_BLUE),
+            ("FONTSIZE", (1, 1), (1, 1), 11),
+            ("ROWBACKGROUNDS", (0, 2), (-1, -1), [WHITE, SLATE_50]),
+            ("GRID", (0, 0), (-1, -1), 0.4, SLATE_200),
+            ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("LEFTPADDING", (0, 0), (0, -1), 8),
+        ]))
+        story.append(st2)
+        story.append(Spacer(1, 8*mm))
+
+        # ── Section 3: Category Breakdown ──
+        story.append(Paragraph("3. Category Breakdown", styles["SH"]))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=6))
+
+        cat_sum_pdf = df.groupby("Category").agg({
+            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
+        }).reset_index()
+        tc_r = pd.DataFrame([{"Category": "Time Controlled Items",
+            "DMC Labour (EUR/FH)": TIME_CONTROLLED_FLAT_RATE, "DMC Material (EUR/FH)": 0.0,
+            "DMC Total (EUR/FH)": TIME_CONTROLLED_FLAT_RATE}])
+        cat_sum_pdf = pd.concat([cat_sum_pdf, tc_r], ignore_index=True).sort_values("DMC Total (EUR/FH)", ascending=False)
+        cat_sum_pdf["pct"] = (cat_sum_pdf["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+
+        cat_rows = [["#", "Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "%"]]
+        for idx, (_, r) in enumerate(cat_sum_pdf.iterrows(), 1):
+            cat_rows.append([str(idx), r["Category"], f"{r['DMC Labour (EUR/FH)']:.2f}",
+                f"{r['DMC Material (EUR/FH)']:.2f}", f"{r['DMC Total (EUR/FH)']:.2f}", f"{r['pct']:.1f}%"])
+
+        ct = Table(cat_rows, colWidths=[8*mm, 48*mm, 28*mm, 28*mm, 28*mm, 16*mm])
+        ct.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
+            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, SLATE_50]),
+            ("GRID", (0, 0), (-1, -1), 0.4, SLATE_200),
+            ("ALIGN", (0, 0), (0, -1), "CENTER"),
+            ("ALIGN", (2, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("LEFTPADDING", (1, 0), (1, -1), 6),
+        ]))
+        story.append(ct)
+
+        # ── Page 2: Detailed Breakdown ──
+        story.append(PageBreak())
+
+        # Reset top margin for subsequent pages
+        story.append(Paragraph("4. Detailed Item Breakdown", styles["SH"]))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=4))
+        story.append(Paragraph(
+            f"All {len(df)} scheduled maintenance items with computed occurrences and DMC rates.",
+            styles["Small"]))
+        story.append(Spacer(1, 3*mm))
+
+        det_cols = ["Inspection", "Int 1", "Int 2", "MH", "Mat (EUR)", "Occ/yr", "Lab EUR/FH", "Mat EUR/FH", "Total EUR/FH"]
+        det_rows = [det_cols]
+        for _, r in df.iterrows():
+            det_rows.append([
+                r["Inspection"], r["Interval 1"], r["Interval 2"],
+                f"{r['MH']}", f"{r['Material (EUR)']:,.0f}", f"{r['Occ/yr (Used)']:.3f}",
+                f"{r['DMC Labour (EUR/FH)']:.4f}", f"{r['DMC Material (EUR/FH)']:.4f}", f"{r['DMC Total (EUR/FH)']:.4f}",
+            ])
+
+        dt = Table(det_rows, colWidths=[26*mm, 16*mm, 16*mm, 10*mm, 18*mm, 14*mm, 22*mm, 22*mm, 22*mm],
+                   repeatRows=1)
+        dt.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 6.5),
+            ("FONTSIZE", (0, 1), (-1, -1), 6.2),
+            ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
+            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, SLATE_50]),
+            ("GRID", (0, 0), (-1, -1), 0.3, SLATE_200),
+            ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 2.5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
+            ("LEFTPADDING", (0, 0), (0, -1), 4),
+        ]))
+        story.append(dt)
+
+        story.append(Spacer(1, 6*mm))
+        story.append(HRFlowable(width="100%", thickness=0.3, color=SLATE_200, spaceAfter=4))
+        story.append(Paragraph(
+            f"Notes: Time Controlled Items (EUR {TIME_CONTROLLED_FLAT_RATE:.0f}/FH flat rate) added to labour total. "
+            f"All values in EUR. Operational adjustment factor x{combined:.3f} applied to all items.",
+            styles["Small"]))
+        story.append(Spacer(1, 10*mm))
+        story.append(Paragraph(
+            "MaintEdge by Deutsche Aircraft GmbH  --  Confidential  --  For authorized use only",
+            ParagraphStyle(name="FN", fontName="Helvetica", fontSize=7,
+                textColor=SLATE_400, alignment=TA_CENTER)))
+
+        doc.build(story,
+            onFirstPage=tmpl.on_first_page,
+            onLaterPages=tmpl.on_page)
+        return buffer.getvalue()
+
+    try:
+        pdf_data = generate_pdf()
+        st.download_button(
+            label="Download PDF Report (.pdf)",
+            data=pdf_data,
+            file_name=f"{base_filename}.pdf",
+            mime="application/pdf",
+        )
+    except ImportError:
+        st.warning("PDF export requires reportlab. Install with: pip install reportlab")
+
+    # Parameters reference
     st.markdown("---")
     st.markdown(f'<div class="sec-head">{svg_icon("settings", 20)} <span>Report</span> Parameters</div>', unsafe_allow_html=True)
 
