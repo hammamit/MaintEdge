@@ -78,7 +78,7 @@ DO328_100_DATA = [
     {"inspection": "Landing Gear Overhaul",  "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",  "mh": 85,    "mat": 456801.70,  "category": "Landing Gear"},
     {"inspection": "Brakes",                 "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",  "mh": 2,     "mat": 93084.12,   "category": "Landing Gear"},
     {"inspection": "APU Overhaul",           "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",  "mh": 20,    "mat": 220000.00,  "category": "APU"},
-    {"inspection": "Time Controlled Items",  "int1": 12,   "param1": "Months", "int2": None,  "param2": None,  "mh": 400,   "mat": 800000.00,  "category": "Time Controlled Components"},
+    {"inspection": "Time Controlled Items",  "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",  "mh": 40,    "mat": 80000.00,   "category": "Time Controlled Components"},
 ]
 
 
