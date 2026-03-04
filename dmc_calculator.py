@@ -78,9 +78,8 @@ DO328_100_DATA = [
     {"inspection": "Landing Gear Overhaul",  "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",  "mh": 85,    "mat": 456801.70,  "category": "Landing Gear"},
     {"inspection": "Brakes",                 "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",  "mh": 2,     "mat": 93084.12,   "category": "Landing Gear"},
     {"inspection": "APU Overhaul",           "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",  "mh": 20,    "mat": 220000.00,  "category": "APU"},
+    {"inspection": "Time Controlled Items",  "int1": 12,   "param1": "Months", "int2": None,  "param2": None,  "mh": 400,   "mat": 800000.00,  "category": "Time Controlled Components"},
 ]
-
-TIME_CONTROLLED_FLAT_RATE = 40.0
 
 
 # ----------------------------------------------------------------
@@ -94,12 +93,12 @@ TIME_CONTROLLED_FLAT_RATE = 40.0
 
 # ENV_WEIGHTS[environment][category] = weight (0.0 to 1.5)
 ENV_WEIGHTS = {
-    "Temperate":        {"Airframe Checks": 1.0, "APU Inspections": 1.0, "FH-Based Tasks": 1.0, "Fatigue Damage (FD)": 1.0, "Corrosion Prevention (CP)": 1.0, "Structural Sampling (SSI)": 1.0, "Engines": 1.0, "Propellers": 1.0, "Landing Gear": 1.0, "APU": 1.0},
-    "Tropical / Humid": {"Airframe Checks": 1.3, "APU Inspections": 0.8, "FH-Based Tasks": 1.0, "Fatigue Damage (FD)": 0.6, "Corrosion Prevention (CP)": 1.5, "Structural Sampling (SSI)": 1.4, "Engines": 0.5, "Propellers": 0.4, "Landing Gear": 0.9, "APU": 0.7},
-    "Arid / Desert":    {"Airframe Checks": 0.5, "APU Inspections": 0.8, "FH-Based Tasks": 0.6, "Fatigue Damage (FD)": 0.3, "Corrosion Prevention (CP)": 0.2, "Structural Sampling (SSI)": 0.3, "Engines": 1.4, "Propellers": 1.5, "Landing Gear": 0.7, "APU": 0.9},
-    "Coastal / Marine":  {"Airframe Checks": 1.2, "APU Inspections": 0.7, "FH-Based Tasks": 0.9, "Fatigue Damage (FD)": 0.5, "Corrosion Prevention (CP)": 1.5, "Structural Sampling (SSI)": 1.5, "Engines": 0.4, "Propellers": 0.5, "Landing Gear": 1.3, "APU": 0.6},
-    "Cold / Arctic":     {"Airframe Checks": 0.6, "APU Inspections": 1.0, "FH-Based Tasks": 0.7, "Fatigue Damage (FD)": 0.4, "Corrosion Prevention (CP)": 0.3, "Structural Sampling (SSI)": 0.3, "Engines": 1.3, "Propellers": 0.8, "Landing Gear": 0.9, "APU": 1.2},
-    "High Altitude":     {"Airframe Checks": 0.2, "APU Inspections": 0.5, "FH-Based Tasks": 0.3, "Fatigue Damage (FD)": 0.3, "Corrosion Prevention (CP)": 0.1, "Structural Sampling (SSI)": 0.1, "Engines": 1.5, "Propellers": 1.3, "Landing Gear": 0.4, "APU": 0.6},
+    "Temperate":        {"Airframe Checks": 1.0, "APU Inspections": 1.0, "FH-Based Tasks": 1.0, "Fatigue Damage (FD)": 1.0, "Corrosion Prevention (CP)": 1.0, "Structural Sampling (SSI)": 1.0, "Engines": 1.0, "Propellers": 1.0, "Landing Gear": 1.0, "APU": 1.0, "Time Controlled Components": 1.0},
+    "Tropical / Humid": {"Airframe Checks": 1.3, "APU Inspections": 0.8, "FH-Based Tasks": 1.0, "Fatigue Damage (FD)": 0.6, "Corrosion Prevention (CP)": 1.5, "Structural Sampling (SSI)": 1.4, "Engines": 0.5, "Propellers": 0.4, "Landing Gear": 0.9, "APU": 0.7, "Time Controlled Components": 0.8},
+    "Arid / Desert":    {"Airframe Checks": 0.5, "APU Inspections": 0.8, "FH-Based Tasks": 0.6, "Fatigue Damage (FD)": 0.3, "Corrosion Prevention (CP)": 0.2, "Structural Sampling (SSI)": 0.3, "Engines": 1.4, "Propellers": 1.5, "Landing Gear": 0.7, "APU": 0.9, "Time Controlled Components": 0.7},
+    "Coastal / Marine":  {"Airframe Checks": 1.2, "APU Inspections": 0.7, "FH-Based Tasks": 0.9, "Fatigue Damage (FD)": 0.5, "Corrosion Prevention (CP)": 1.5, "Structural Sampling (SSI)": 1.5, "Engines": 0.4, "Propellers": 0.5, "Landing Gear": 1.3, "APU": 0.6, "Time Controlled Components": 0.7},
+    "Cold / Arctic":     {"Airframe Checks": 0.6, "APU Inspections": 1.0, "FH-Based Tasks": 0.7, "Fatigue Damage (FD)": 0.4, "Corrosion Prevention (CP)": 0.3, "Structural Sampling (SSI)": 0.3, "Engines": 1.3, "Propellers": 0.8, "Landing Gear": 0.9, "APU": 1.2, "Time Controlled Components": 0.9},
+    "High Altitude":     {"Airframe Checks": 0.2, "APU Inspections": 0.5, "FH-Based Tasks": 0.3, "Fatigue Damage (FD)": 0.3, "Corrosion Prevention (CP)": 0.1, "Structural Sampling (SSI)": 0.1, "Engines": 1.5, "Propellers": 1.3, "Landing Gear": 0.4, "APU": 0.6, "Time Controlled Components": 0.5},
 }
 
 # GRAVEL_WEIGHTS[category] = weight (how much gravel % affects this category)
@@ -114,6 +113,7 @@ GRAVEL_WEIGHTS = {
     "Propellers": 1.5,
     "Landing Gear": 1.4,
     "APU": 0.2,
+    "Time Controlled Components": 0.4,
 }
 
 # STOL_WEIGHTS[category] = weight (how much STOL % affects this category)
@@ -128,6 +128,7 @@ STOL_WEIGHTS = {
     "Propellers": 1.2,
     "Landing Gear": 1.5,
     "APU": 0.3,
+    "Time Controlled Components": 0.3,
 }
 
 
@@ -731,7 +732,7 @@ elif st.session_state.page == "Setup & Calculate":
             df = pd.DataFrame(results)
             st.session_state.calc_results = results
 
-        total_labour = df["DMC Labour (EUR/FH)"].sum() + TIME_CONTROLLED_FLAT_RATE
+        total_labour = df["DMC Labour (EUR/FH)"].sum()
         total_material = df["DMC Material (EUR/FH)"].sum()
         total_dmc = total_labour + total_material
 
@@ -785,10 +786,7 @@ elif st.session_state.page == "Setup & Calculate":
         cat_sum = df.groupby("Category").agg({
             "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
         }).reset_index()
-        tc_row = pd.DataFrame([{"Category": "Time Controlled Items",
-            "DMC Labour (EUR/FH)": TIME_CONTROLLED_FLAT_RATE, "DMC Material (EUR/FH)": 0.0,
-            "DMC Total (EUR/FH)": TIME_CONTROLLED_FLAT_RATE}])
-        cat_sum = pd.concat([cat_sum, tc_row], ignore_index=True).sort_values("DMC Total (EUR/FH)", ascending=False)
+        cat_sum = cat_sum.sort_values("DMC Total (EUR/FH)", ascending=False)
 
         col_c1, col_c2 = st.columns(2)
         with col_c1:
@@ -822,11 +820,8 @@ elif st.session_state.page == "Setup & Calculate":
         # Add per-category adjustment factors
         cat_factors_list = []
         for cat_name in cat_disp["Category"]:
-            if cat_name == "Time Controlled Items":
-                cat_factors_list.append(1.0)
-            else:
-                cf, _, _, _ = get_category_factor(cat_name, s["environment"], s["gravel_pct"], s["stol_pct"])
-                cat_factors_list.append(round(cf, 4))
+            cf, _, _, _ = get_category_factor(cat_name, s["environment"], s["gravel_pct"], s["stol_pct"])
+            cat_factors_list.append(round(cf, 4))
         cat_disp["Adj. Factor"] = cat_factors_list
 
         st.dataframe(cat_disp.style.format({
@@ -867,7 +862,6 @@ elif st.session_state.page == "Setup & Calculate":
             "DMC Material (EUR/FH)": "EUR {:.4f}", "DMC Total (EUR/FH)": "EUR {:.4f}"}),
             use_container_width=True, hide_index=True, height=600)
 
-        st.markdown(f'<div class="info-box info-amber">Time Controlled Items: Flat rate of <strong>EUR {TIME_CONTROLLED_FLAT_RATE:.0f}/FH</strong> added to total (not in detail table).</div>', unsafe_allow_html=True)
 
     else:
         # Pre-calculation state
@@ -909,7 +903,7 @@ elif st.session_state.page == "Report":
         s["apu_hrs_per_year"], s["labour_rate"], s["environment"], s["gravel_pct"], s["stol_pct"])
     df = pd.DataFrame(results)
 
-    total_labour = df["DMC Labour (EUR/FH)"].sum() + TIME_CONTROLLED_FLAT_RATE
+    total_labour = df["DMC Labour (EUR/FH)"].sum()
     total_material = df["DMC Material (EUR/FH)"].sum()
     total_dmc = total_labour + total_material
 
@@ -1003,8 +997,13 @@ elif st.session_state.page == "Report":
         row += 1
         ws1.cell(row=row, column=1, value="DMC RESULTS").font = blue_font
         row += 1
-        for label, val in [("Total DMC (EUR/FH)", total_dmc), ("Labour DMC (EUR/FH)", total_labour),
-                           ("Material DMC (EUR/FH)", total_material), ("Annual DMC (EUR)", total_dmc * s["fh_per_year"])]:
+        unsched_xl = total_dmc * 0.40
+        logistics_xl = total_dmc * 0.15
+        total_all_in_xl = total_dmc + unsched_xl + logistics_xl
+        for label, val in [("Scheduled DMC (EUR/FH)", total_dmc), ("Labour DMC (EUR/FH)", total_labour),
+                           ("Material DMC (EUR/FH)", total_material), ("Annual Scheduled DMC (EUR)", total_dmc * s["fh_per_year"]),
+                           ("Unscheduled Maintenance (40%)", unsched_xl), ("Logistics & Customs (15%)", logistics_xl),
+                           ("All-In DMC Estimate (EUR/FH)", total_all_in_xl), ("All-In Annual (EUR)", total_all_in_xl * s["fh_per_year"])]:
             ws1.cell(row=row, column=1, value=label).font = bold_font
             cell = ws1.cell(row=row, column=3, value=round(val, 2))
             cell.font = Font(name="Arial", size=11, bold=True, color="2563EB")
@@ -1021,10 +1020,7 @@ elif st.session_state.page == "Report":
         cat_sum = df.groupby("Category").agg({
             "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
         }).reset_index()
-        tc_r = pd.DataFrame([{"Category": "Time Controlled Items",
-            "DMC Labour (EUR/FH)": TIME_CONTROLLED_FLAT_RATE, "DMC Material (EUR/FH)": 0.0,
-            "DMC Total (EUR/FH)": TIME_CONTROLLED_FLAT_RATE}])
-        cat_sum = pd.concat([cat_sum, tc_r], ignore_index=True).sort_values("DMC Total (EUR/FH)", ascending=False)
+        cat_sum = cat_sum.sort_values("DMC Total (EUR/FH)", ascending=False)
         cat_sum["% of Total"] = (cat_sum["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
 
         headers2 = ["Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "% of Total"]
@@ -1265,35 +1261,43 @@ elif st.session_state.page == "Report":
 
         labour_pct_val = (total_labour / total_dmc * 100) if total_dmc > 0 else 0
         material_pct_val = 100 - labour_pct_val
+        unsched = total_dmc * 0.40
+        logistics = total_dmc * 0.15
+        total_all_in = total_dmc + unsched + logistics
 
         sum_rows = [
             ["Component", "EUR / FH", "EUR / Year", "% of Total"],
-            ["Total DMC", f"{total_dmc:,.2f}", f"{total_dmc * s['fh_per_year']:,.0f}", "100.0%"],
-            ["Labour DMC", f"{total_labour:,.2f}", f"{total_labour * s['fh_per_year']:,.0f}", f"{labour_pct_val:.1f}%"],
-            ["Material DMC", f"{total_material:,.2f}", f"{total_material * s['fh_per_year']:,.0f}", f"{material_pct_val:.1f}%"],
-            [f"Time Controlled (flat)", f"{TIME_CONTROLLED_FLAT_RATE:.2f}", f"{TIME_CONTROLLED_FLAT_RATE * s['fh_per_year']:,.0f}", f"{(TIME_CONTROLLED_FLAT_RATE/total_dmc*100):.1f}%"],
+            ["Scheduled DMC (Total)", f"{total_dmc:,.2f}", f"{total_dmc * s['fh_per_year']:,.0f}", "100.0%"],
+            ["  Labour", f"{total_labour:,.2f}", f"{total_labour * s['fh_per_year']:,.0f}", f"{labour_pct_val:.1f}%"],
+            ["  Material", f"{total_material:,.2f}", f"{total_material * s['fh_per_year']:,.0f}", f"{material_pct_val:.1f}%"],
+            ["Unscheduled Maintenance (40%)", f"{unsched:,.2f}", f"{unsched * s['fh_per_year']:,.0f}", "40.0%"],
+            ["Logistics & Customs (15%)", f"{logistics:,.2f}", f"{logistics * s['fh_per_year']:,.0f}", "15.0%"],
+            ["All-In DMC Estimate", f"{total_all_in:,.2f}", f"{total_all_in * s['fh_per_year']:,.0f}", "155.0%"],
         ]
         st2 = Table(sum_rows, colWidths=[50*mm, 35*mm, 40*mm, 30*mm])
         st2.setStyle(TableStyle([
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("FONTSIZE", (0, 0), (-1, -1), 8.5),
             ("BACKGROUND", (0, 0), (-1, 0), NAVY),
             ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
-            # Total row highlight
             ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#EFF6FF")),
             ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
             ("TEXTCOLOR", (1, 1), (1, 1), BRAND_BLUE),
-            ("FONTSIZE", (1, 1), (1, 1), 11),
-            ("ROWBACKGROUNDS", (0, 2), (-1, -1), [WHITE, SLATE_50]),
+            ("FONTSIZE", (1, 1), (1, 1), 10),
+            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+            ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#0A1628")),
+            ("TEXTCOLOR", (0, -1), (-1, -1), WHITE),
+            ("FONTSIZE", (0, -1), (-1, -1), 10),
+            ("ROWBACKGROUNDS", (0, 2), (-1, -2), [WHITE, SLATE_50]),
             ("GRID", (0, 0), (-1, -1), 0.4, SLATE_200),
             ("ALIGN", (1, 0), (-1, -1), "CENTER"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 6),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
             ("LEFTPADDING", (0, 0), (0, -1), 8),
         ]))
         story.append(st2)
-        story.append(Spacer(1, 8*mm))
+        story.append(Spacer(1, 6*mm))
 
         # ── Section 3: Category Breakdown ──
         story.append(Paragraph("3. Category Breakdown", styles["SH"]))
@@ -1302,10 +1306,7 @@ elif st.session_state.page == "Report":
         cat_sum_pdf = df.groupby("Category").agg({
             "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
         }).reset_index()
-        tc_r = pd.DataFrame([{"Category": "Time Controlled Items",
-            "DMC Labour (EUR/FH)": TIME_CONTROLLED_FLAT_RATE, "DMC Material (EUR/FH)": 0.0,
-            "DMC Total (EUR/FH)": TIME_CONTROLLED_FLAT_RATE}])
-        cat_sum_pdf = pd.concat([cat_sum_pdf, tc_r], ignore_index=True).sort_values("DMC Total (EUR/FH)", ascending=False)
+        cat_sum_pdf = cat_sum_pdf.sort_values("DMC Total (EUR/FH)", ascending=False)
         cat_sum_pdf["pct"] = (cat_sum_pdf["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
 
         cat_rows = [["#", "Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "%"]]
@@ -1330,55 +1331,85 @@ elif st.session_state.page == "Report":
         ]))
         story.append(ct)
 
-        # ── Page 2: Detailed Breakdown ──
-        story.append(PageBreak())
-
-        # Reset top margin for subsequent pages
+        # ── Detailed Breakdown (continues on same page, no forced break) ──
+        story.append(Spacer(1, 6*mm))
         story.append(Paragraph("4. Detailed Item Breakdown", styles["SH"]))
         story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=4))
         story.append(Paragraph(
-            f"All {len(df)} scheduled maintenance items with computed occurrences and DMC rates.",
+            f"All {len(df)} scheduled maintenance items with computed occurrences and DMC rates. "
+            f"Category-specific adjustment factors applied per item.",
             styles["Small"]))
-        story.append(Spacer(1, 3*mm))
+        story.append(Spacer(1, 2*mm))
 
-        det_cols = ["Inspection", "Int 1", "Int 2", "MH", "Mat (EUR)", "Occ/yr", "Lab EUR/FH", "Mat EUR/FH", "Total EUR/FH"]
+        det_cols = ["Inspection", "Cat.", "Int 1", "Int 2", "MH", "Mat (EUR)", "Occ/yr", "Adj.F", "Total EUR/FH"]
         det_rows = [det_cols]
         for _, r in df.iterrows():
+            cat_short = r["Category"].replace("Corrosion Prevention ", "").replace("Structural Sampling ", "").replace("Fatigue Damage ", "").replace("Time Controlled ", "TC ")
             det_rows.append([
-                r["Inspection"], r["Interval 1"], r["Interval 2"],
+                r["Inspection"], cat_short, r["Interval 1"], r["Interval 2"],
                 f"{r['MH']}", f"{r['Material (EUR)']:,.0f}", f"{r['Occ/yr (Used)']:.3f}",
-                f"{r['DMC Labour (EUR/FH)']:.4f}", f"{r['DMC Material (EUR/FH)']:.4f}", f"{r['DMC Total (EUR/FH)']:.4f}",
+                f"{r['Adj. Factor']:.3f}", f"{r['DMC Total (EUR/FH)']:.4f}",
             ])
 
-        dt = Table(det_rows, colWidths=[26*mm, 16*mm, 16*mm, 10*mm, 18*mm, 14*mm, 22*mm, 22*mm, 22*mm],
+        dt = Table(det_rows, colWidths=[24*mm, 14*mm, 14*mm, 14*mm, 10*mm, 16*mm, 14*mm, 12*mm, 22*mm],
                    repeatRows=1)
         dt.setStyle(TableStyle([
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 6.5),
-            ("FONTSIZE", (0, 1), (-1, -1), 6.2),
+            ("FONTSIZE", (0, 0), (-1, 0), 6),
+            ("FONTSIZE", (0, 1), (-1, -1), 5.8),
             ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
             ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
             ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, SLATE_50]),
-            ("GRID", (0, 0), (-1, -1), 0.3, SLATE_200),
+            ("GRID", (0, 0), (-1, -1), 0.25, SLATE_200),
             ("ALIGN", (1, 0), (-1, -1), "CENTER"),
             ("ALIGN", (0, 0), (0, -1), "LEFT"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 2.5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
-            ("LEFTPADDING", (0, 0), (0, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, -1), 2),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+            ("LEFTPADDING", (0, 0), (0, -1), 3),
         ]))
         story.append(dt)
 
-        story.append(Spacer(1, 6*mm))
-        story.append(HRFlowable(width="100%", thickness=0.3, color=SLATE_200, spaceAfter=4))
+        # ── Disclaimer ──
+        story.append(Spacer(1, 8*mm))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=4))
+        story.append(Paragraph("Disclaimer & Notes", ParagraphStyle(name="DiscHead",
+            fontName="Helvetica-Bold", fontSize=8, textColor=DARK_BLUE, spaceAfter=3)))
+
+        disc_style = ParagraphStyle(name="Disc", fontName="Helvetica", fontSize=7,
+            textColor=SLATE_600, leading=9.5, spaceAfter=2, alignment=TA_JUSTIFY)
+
         story.append(Paragraph(
-            f"Notes: Time Controlled Items (EUR {TIME_CONTROLLED_FLAT_RATE:.0f}/FH flat rate) added to labour total. "
-            f"All values in EUR. Operational adjustment factor x{combined:.3f} applied to all items.",
-            styles["Small"]))
-        story.append(Spacer(1, 10*mm))
+            "1. This report is generated by MaintEdge v1.0, a Direct Maintenance Cost estimation tool developed by "
+            "Deutsche Aircraft GmbH. All cost figures are estimates based on the OEM maintenance programme, assumed "
+            "utilization profiles, and engineering-derived adjustment factors. Actual maintenance costs may vary "
+            "depending on operator-specific practices, MRO capabilities, regulatory requirements, and supply chain conditions.",
+            disc_style))
         story.append(Paragraph(
-            "MaintEdge by Deutsche Aircraft GmbH  --  Confidential  --  For authorized use only",
-            ParagraphStyle(name="FN", fontName="Helvetica", fontSize=7,
+            "2. Unscheduled maintenance costs are estimated at 40% of scheduled DMC based on industry benchmarks for "
+            "regional turboprop aircraft. Logistics and customs costs are estimated at 15% of scheduled DMC. These "
+            "percentages are indicative and should be validated against operator-specific experience.",
+            disc_style))
+        story.append(Paragraph(
+            "3. Category-specific environmental and operational adjustment factors are based on engineering judgement, "
+            "OEM experience, and published industry data. They have not been statistically validated against a large "
+            "in-service dataset for every environment-category combination. Users should apply professional judgement "
+            "when interpreting results for contractual or financial planning purposes.",
+            disc_style))
+        story.append(Paragraph(
+            "4. Material costs reflect current OEM catalogue pricing and may be subject to escalation, discount "
+            "agreements, exchange rate fluctuations, and availability constraints. Labour rates are user-defined and "
+            "should reflect the actual cost of certified maintenance personnel at the applicable MRO.",
+            disc_style))
+        story.append(Paragraph(
+            "5. This document is provided for informational purposes only and does not constitute a binding cost "
+            "commitment or warranty by Deutsche Aircraft GmbH. Any use of this data for lease agreements, maintenance "
+            "reserve calculations, or financial planning is at the sole discretion and risk of the user.",
+            disc_style))
+        story.append(Spacer(1, 4*mm))
+        story.append(Paragraph(
+            "MaintEdge by Deutsche Aircraft GmbH  |  Confidential  |  For authorized use only",
+            ParagraphStyle(name="FN", fontName="Helvetica-Bold", fontSize=7,
                 textColor=SLATE_400, alignment=TA_CENTER)))
 
         doc.build(story,
@@ -1406,14 +1437,14 @@ elif st.session_state.page == "Report":
             "Aircraft Type", "Operator", "Base Country", "FH/Year", "FC/Year",
             "APU Hrs/Year", "FH/FC Ratio", "Labour Rate", "Environment",
             "Environment Factor", "Gravel %", "Gravel Factor", "STOL %", "STOL Factor",
-            "Combined Ops Factor", "Time Controlled Items",
+            "Factors", "Category-Specific",
         ],
         "Value": [
             s["aircraft_type"], s["operator"] or "N/A", s["base_country"] or "N/A",
             f"{s['fh_per_year']:,}", f"{s['fc_per_year']:,}", f"{s['apu_hrs_per_year']:,}",
             f"{s['fh_fc_ratio']:.2f}", f"EUR {s['labour_rate']:.2f}/hr", s["environment"],
             f"x{ef:.2f}", f"{s['gravel_pct']}%", f"x{gf:.2f}", f"{s['stol_pct']}%", f"x{sf:.2f}",
-            f"x{ef*gf*sf:.3f}", f"EUR {TIME_CONTROLLED_FLAT_RATE:.0f}/FH (flat)",
+            "Env x Gravel x STOL", "Weighted per category (see Calculate page)",
         ],
     }
     st.dataframe(pd.DataFrame(params), use_container_width=True, hide_index=True)
