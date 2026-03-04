@@ -84,11 +84,75 @@ TIME_CONTROLLED_FLAT_RATE = 40.0
 
 
 # ----------------------------------------------------------------
+# CATEGORY-SPECIFIC FACTOR WEIGHTS
+# ----------------------------------------------------------------
+# Each environment/operational factor has different severity per category.
+# Weight = how much of the base factor applies to this category.
+# e.g., Tropical x1.12 with airframe weight 1.0 => full +12%
+#        Tropical x1.12 with engine weight 0.3  => only +3.6%
+# Formula per category: factor_applied = 1.0 + (base_factor - 1.0) * weight
+
+# ENV_WEIGHTS[environment][category] = weight (0.0 to 1.5)
+ENV_WEIGHTS = {
+    "Temperate":        {"Airframe Checks": 1.0, "APU Inspections": 1.0, "FH-Based Tasks": 1.0, "Fatigue Damage (FD)": 1.0, "Corrosion Prevention (CP)": 1.0, "Structural Sampling (SSI)": 1.0, "Engines": 1.0, "Propellers": 1.0, "Landing Gear": 1.0, "APU": 1.0},
+    "Tropical / Humid": {"Airframe Checks": 1.3, "APU Inspections": 0.8, "FH-Based Tasks": 1.0, "Fatigue Damage (FD)": 0.6, "Corrosion Prevention (CP)": 1.5, "Structural Sampling (SSI)": 1.4, "Engines": 0.5, "Propellers": 0.4, "Landing Gear": 0.9, "APU": 0.7},
+    "Arid / Desert":    {"Airframe Checks": 0.5, "APU Inspections": 0.8, "FH-Based Tasks": 0.6, "Fatigue Damage (FD)": 0.3, "Corrosion Prevention (CP)": 0.2, "Structural Sampling (SSI)": 0.3, "Engines": 1.4, "Propellers": 1.5, "Landing Gear": 0.7, "APU": 0.9},
+    "Coastal / Marine":  {"Airframe Checks": 1.2, "APU Inspections": 0.7, "FH-Based Tasks": 0.9, "Fatigue Damage (FD)": 0.5, "Corrosion Prevention (CP)": 1.5, "Structural Sampling (SSI)": 1.5, "Engines": 0.4, "Propellers": 0.5, "Landing Gear": 1.3, "APU": 0.6},
+    "Cold / Arctic":     {"Airframe Checks": 0.6, "APU Inspections": 1.0, "FH-Based Tasks": 0.7, "Fatigue Damage (FD)": 0.4, "Corrosion Prevention (CP)": 0.3, "Structural Sampling (SSI)": 0.3, "Engines": 1.3, "Propellers": 0.8, "Landing Gear": 0.9, "APU": 1.2},
+    "High Altitude":     {"Airframe Checks": 0.2, "APU Inspections": 0.5, "FH-Based Tasks": 0.3, "Fatigue Damage (FD)": 0.3, "Corrosion Prevention (CP)": 0.1, "Structural Sampling (SSI)": 0.1, "Engines": 1.5, "Propellers": 1.3, "Landing Gear": 0.4, "APU": 0.6},
+}
+
+# GRAVEL_WEIGHTS[category] = weight (how much gravel % affects this category)
+GRAVEL_WEIGHTS = {
+    "Airframe Checks": 0.6,
+    "APU Inspections": 0.2,
+    "FH-Based Tasks": 0.4,
+    "Fatigue Damage (FD)": 0.3,
+    "Corrosion Prevention (CP)": 0.5,
+    "Structural Sampling (SSI)": 0.4,
+    "Engines": 0.6,
+    "Propellers": 1.5,
+    "Landing Gear": 1.4,
+    "APU": 0.2,
+}
+
+# STOL_WEIGHTS[category] = weight (how much STOL % affects this category)
+STOL_WEIGHTS = {
+    "Airframe Checks": 0.5,
+    "APU Inspections": 0.2,
+    "FH-Based Tasks": 0.4,
+    "Fatigue Damage (FD)": 1.5,
+    "Corrosion Prevention (CP)": 0.2,
+    "Structural Sampling (SSI)": 0.3,
+    "Engines": 0.8,
+    "Propellers": 1.2,
+    "Landing Gear": 1.5,
+    "APU": 0.3,
+}
+
+
+def get_category_factor(category, environment, gravel_pct, stol_pct):
+    """Compute combined adjustment factor for a specific category."""
+    base_env = ENVIRONMENT_FACTORS[environment]
+    env_weight = ENV_WEIGHTS.get(environment, {}).get(category, 1.0)
+    env_applied = 1.0 + (base_env - 1.0) * env_weight
+
+    gravel_base = (gravel_pct / 100) * 0.15
+    gravel_weight = GRAVEL_WEIGHTS.get(category, 1.0)
+    gravel_applied = 1.0 + gravel_base * gravel_weight
+
+    stol_base = (stol_pct / 100) * 0.10
+    stol_weight = STOL_WEIGHTS.get(category, 1.0)
+    stol_applied = 1.0 + stol_base * stol_weight
+
+    return env_applied * gravel_applied * stol_applied, env_applied, gravel_applied, stol_applied
+
+
+# ----------------------------------------------------------------
 # DMC CALCULATION ENGINE
 # ----------------------------------------------------------------
-def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_factor, gravel_factor, stol_factor):
+def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, environment, gravel_pct, stol_pct):
     results = []
-    total_ops_factor = env_factor * gravel_factor * stol_factor
 
     for item in data:
         int1 = item["int1"]
@@ -97,6 +161,10 @@ def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_factor, grave
         param2 = item["param2"]
         mh = item["mh"]
         mat = item["mat"]
+        cat = item["category"]
+
+        # Category-specific combined factor
+        cat_factor, _, _, _ = get_category_factor(cat, environment, gravel_pct, stol_pct)
 
         # Occurrence 1 (calendar)
         occ1 = 0.0
@@ -126,12 +194,12 @@ def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_factor, grave
         dmc_labour = (occ * labour_rate * mh) / fh_yr if fh_yr > 0 else 0
         dmc_material = (occ * mat) / fh_yr if fh_yr > 0 else 0
 
-        dmc_labour_adj = dmc_labour * total_ops_factor
-        dmc_material_adj = dmc_material * total_ops_factor
+        dmc_labour_adj = dmc_labour * cat_factor
+        dmc_material_adj = dmc_material * cat_factor
         dmc_total = dmc_labour_adj + dmc_material_adj
 
         results.append({
-            "Category": item["category"],
+            "Category": cat,
             "Inspection": item["inspection"],
             "Interval 1": f"{int1} {param1}" if int1 and param1 else " -- ",
             "Interval 2": f"{int(int2)} {param2}" if int2 and param2 else " -- ",
@@ -141,6 +209,7 @@ def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_factor, grave
             "Occ/yr (Usage)": round(occ2, 4),
             "Occ/yr (Used)": round(occ, 4),
             "Driver": occ_source,
+            "Adj. Factor": round(cat_factor, 4),
             "DMC Labour (EUR/FH)": round(dmc_labour_adj, 4),
             "DMC Material (EUR/FH)": round(dmc_material_adj, 4),
             "DMC Total (EUR/FH)": round(dmc_total, 4),
@@ -658,7 +727,7 @@ elif st.session_state.page == "Setup & Calculate":
     if st.session_state.get("calculated", False):
         with st.spinner("Computing DMC for all maintenance items..."):
             results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
-                s["apu_hrs_per_year"], s["labour_rate"], ef, gf, sf)
+                s["apu_hrs_per_year"], s["labour_rate"], s["environment"], s["gravel_pct"], s["stol_pct"])
             df = pd.DataFrame(results)
             st.session_state.calc_results = results
 
@@ -749,9 +818,41 @@ elif st.session_state.page == "Setup & Calculate":
         st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>Category</span> Summary</div>', unsafe_allow_html=True)
         cat_disp = cat_sum.copy()
         cat_disp["% of Total"] = (cat_disp["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+
+        # Add per-category adjustment factors
+        cat_factors_list = []
+        for cat_name in cat_disp["Category"]:
+            if cat_name == "Time Controlled Items":
+                cat_factors_list.append(1.0)
+            else:
+                cf, _, _, _ = get_category_factor(cat_name, s["environment"], s["gravel_pct"], s["stol_pct"])
+                cat_factors_list.append(round(cf, 4))
+        cat_disp["Adj. Factor"] = cat_factors_list
+
         st.dataframe(cat_disp.style.format({
             "DMC Labour (EUR/FH)": "EUR {:.2f}", "DMC Material (EUR/FH)": "EUR {:.2f}",
-            "DMC Total (EUR/FH)": "EUR {:.2f}", "% of Total": "{:.1f}%"}),
+            "DMC Total (EUR/FH)": "EUR {:.2f}", "% of Total": "{:.1f}%", "Adj. Factor": "x{:.4f}"}),
+            use_container_width=True, hide_index=True)
+
+        # Category factor breakdown
+        st.markdown(f'<div class="sec-head">{svg_icon("target", 20)} <span>Category-Specific</span> Adjustment Factors</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="info-box info-blue">Factors are weighted per category. For example, tropical humidity affects Corrosion Prevention tasks more heavily than engine tasks.</div>', unsafe_allow_html=True)
+
+        factor_rows = []
+        all_cats = sorted(df["Category"].unique().tolist())
+        for cat_name in all_cats:
+            cf, ef_cat, gf_cat, sf_cat = get_category_factor(cat_name, s["environment"], s["gravel_pct"], s["stol_pct"])
+            factor_rows.append({
+                "Category": cat_name,
+                "Env Factor": round(ef_cat, 4),
+                "Gravel Factor": round(gf_cat, 4),
+                "STOL Factor": round(sf_cat, 4),
+                "Combined": round(cf, 4),
+            })
+        factor_df = pd.DataFrame(factor_rows)
+        st.dataframe(factor_df.style.format({
+            "Env Factor": "x{:.4f}", "Gravel Factor": "x{:.4f}",
+            "STOL Factor": "x{:.4f}", "Combined": "x{:.4f}"}),
             use_container_width=True, hide_index=True)
 
         # Detail table
@@ -762,7 +863,7 @@ elif st.session_state.page == "Setup & Calculate":
 
         st.dataframe(df_show.style.format({
             "Material (EUR)": "EUR {:,.2f}", "Occ/yr (Cal)": "{:.4f}", "Occ/yr (Usage)": "{:.4f}",
-            "Occ/yr (Used)": "{:.4f}", "DMC Labour (EUR/FH)": "EUR {:.4f}",
+            "Occ/yr (Used)": "{:.4f}", "Adj. Factor": "{:.4f}", "DMC Labour (EUR/FH)": "EUR {:.4f}",
             "DMC Material (EUR/FH)": "EUR {:.4f}", "DMC Total (EUR/FH)": "EUR {:.4f}"}),
             use_container_width=True, hide_index=True, height=600)
 
@@ -805,7 +906,7 @@ elif st.session_state.page == "Report":
     combined = ef * gf * sf
 
     results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
-        s["apu_hrs_per_year"], s["labour_rate"], ef, gf, sf)
+        s["apu_hrs_per_year"], s["labour_rate"], s["environment"], s["gravel_pct"], s["stol_pct"])
     df = pd.DataFrame(results)
 
     total_labour = df["DMC Labour (EUR/FH)"].sum() + TIME_CONTROLLED_FLAT_RATE
