@@ -18,7 +18,9 @@ st.set_page_config(
 # DO 328-100 MAINTENANCE DATA (baseline from Excel)
 # ----------------------------------------------------------------
 DO328_100_DATA = [
-    {"inspection": "LC",              "int1": 15,   "param1": "Days",   "int2": 60,    "param2": "FH",      "mh": 8,     "mat": 40.00,      "category": "Airframe Checks"},
+    # Airframe Checks (updated LC material to 14.08)
+    {"inspection": "Engine Oil Level Check", "int1": None, "param1": None,     "int2": 24,    "param2": "FH",      "mh": 0.5,   "mat": 37.55,      "category": "Airframe Checks"},
+    {"inspection": "LC",              "int1": 15,   "param1": "Days",   "int2": 60,    "param2": "FH",      "mh": 8,     "mat": 14.08,      "category": "Airframe Checks"},
     {"inspection": "A1",              "int1": 7.5,  "param1": "Months", "int2": 500,   "param2": "FH",      "mh": 80,    "mat": 91.23,      "category": "Airframe Checks"},
     {"inspection": "A2",              "int1": 15,   "param1": "Months", "int2": 1000,  "param2": "FH",      "mh": 50,    "mat": 10847.72,   "category": "Airframe Checks"},
     {"inspection": "A3",              "int1": 15,   "param1": "Months", "int2": 1500,  "param2": "FH",      "mh": 20,    "mat": 11383.37,   "category": "Airframe Checks"},
@@ -28,10 +30,12 @@ DO328_100_DATA = [
     {"inspection": "C2",              "int1": 60,   "param1": "Months", "int2": 10000, "param2": "FH",      "mh": 270,   "mat": 1824.69,    "category": "Airframe Checks"},
     {"inspection": "C3",              "int1": 90,   "param1": "Months", "int2": 15000, "param2": "FH",      "mh": 30,    "mat": 182.47,     "category": "Airframe Checks"},
     {"inspection": "C4",              "int1": 120,  "param1": "Months", "int2": 20000, "param2": "FH",      "mh": 140,   "mat": 2982.48,    "category": "Airframe Checks"},
+    # APU Inspections (unchanged)
     {"inspection": "APU500",          "int1": None, "param1": None,     "int2": 500,   "param2": "APU Hrs", "mh": 2.5,   "mat": 217.62,     "category": "APU Inspections"},
     {"inspection": "APU800",          "int1": None, "param1": None,     "int2": 8000,  "param2": "APU Hrs", "mh": 8,     "mat": 249.02,     "category": "APU Inspections"},
     {"inspection": "APU1000",         "int1": None, "param1": None,     "int2": 1000,  "param2": "APU Hrs", "mh": 11,    "mat": 0,          "category": "APU Inspections"},
     {"inspection": "APU5000",         "int1": None, "param1": None,     "int2": 5000,  "param2": "APU Hrs", "mh": 10,    "mat": 255.00,     "category": "APU Inspections"},
+    # FH-Based Tasks (unchanged)
     {"inspection": "FH1000",          "int1": None, "param1": None,     "int2": 1000,  "param2": "FH",      "mh": 10.5,  "mat": 0,          "category": "FH-Based Tasks"},
     {"inspection": "FH1200",          "int1": None, "param1": None,     "int2": 1200,  "param2": "FH",      "mh": 2,     "mat": 0,          "category": "FH-Based Tasks"},
     {"inspection": "FH2000",          "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",      "mh": 4,     "mat": 0,          "category": "FH-Based Tasks"},
@@ -39,6 +43,7 @@ DO328_100_DATA = [
     {"inspection": "FH4000/60M",      "int1": 60,   "param1": "Months", "int2": 4000,  "param2": "FH",      "mh": 5,     "mat": 0,          "category": "FH-Based Tasks"},
     {"inspection": "FH8000",          "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",      "mh": 3,     "mat": 0,          "category": "FH-Based Tasks"},
     {"inspection": "Weight & Balance","int1": 48,   "param1": "Months", "int2": None,  "param2": None,      "mh": 23,    "mat": 0,          "category": "FH-Based Tasks"},
+    # Fatigue Damage (unchanged)
     {"inspection": "FD-0101",         "int1": None, "param1": None,     "int2": 1000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
     {"inspection": "FD-0202",         "int1": None, "param1": None,     "int2": 2000,  "param2": "FC",      "mh": 6,     "mat": 0,          "category": "Fatigue Damage (FD)"},
     {"inspection": "FD-0303",         "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
@@ -62,29 +67,60 @@ DO328_100_DATA = [
     {"inspection": "FD-2510",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 24,    "mat": 0,          "category": "Fatigue Damage (FD)"},
     {"inspection": "FD-2512",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 90,    "mat": 0,          "category": "Fatigue Damage (FD)"},
     {"inspection": "FD-2516",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 225,   "mat": 0,          "category": "Fatigue Damage (FD)"},
+    # Corrosion Prevention (unchanged)
     {"inspection": "CP-2",            "int1": 24,   "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Corrosion Prevention (CP)"},
     {"inspection": "CP-2.5",          "int1": 30,   "param1": "Months", "int2": None,  "param2": None,      "mh": 20,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
     {"inspection": "CP-4",            "int1": 48,   "param1": "Months", "int2": None,  "param2": None,      "mh": 10,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
     {"inspection": "CP-5",            "int1": 60,   "param1": "Months", "int2": None,  "param2": None,      "mh": 35,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
     {"inspection": "CP-10",           "int1": 96,   "param1": "Months", "int2": None,  "param2": None,      "mh": 105,   "mat": 0,          "category": "Corrosion Prevention (CP)"},
     {"inspection": "CP-10/5",         "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    # Structural Sampling (SSI-10/5 material corrected to 0)
     {"inspection": "SSI-2",           "int1": 24,   "param1": "Months", "int2": None,  "param2": None,      "mh": 15,    "mat": 0,          "category": "Structural Sampling (SSI)"},
     {"inspection": "SSI-2.5",         "int1": 30,   "param1": "Months", "int2": None,  "param2": None,      "mh": 10,    "mat": 314.87,     "category": "Structural Sampling (SSI)"},
     {"inspection": "SSI-5",           "int1": 60,   "param1": "Months", "int2": None,  "param2": None,      "mh": 80,    "mat": 1096.10,    "category": "Structural Sampling (SSI)"},
     {"inspection": "SSI-10",          "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 220,   "mat": 2991.68,    "category": "Structural Sampling (SSI)"},
     {"inspection": "SSI-10/5",        "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Structural Sampling (SSI)"},
-    {"inspection": "Propeller Change (2EA)",  "int1": None, "param1": None,     "int2": 6000,  "param2": "FC",  "mh": 80,    "mat": 180000.00,  "category": "Propellers"},
-    {"inspection": "Engine Change (2EA)",    "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",  "mh": 360,   "mat": 2400000.00, "category": "Engines"},
-    {"inspection": "Landing Gear Overhaul",  "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",  "mh": 85,    "mat": 456801.70,  "category": "Landing Gear"},
-    {"inspection": "Brakes",                 "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",  "mh": 2,     "mat": 93084.12,   "category": "Landing Gear"},
-    {"inspection": "APU Overhaul",           "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",  "mh": 20,    "mat": 220000.00,  "category": "APU"},
-    {"inspection": "Time Controlled Items",  "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",  "mh": 40,    "mat": 80000.00,   "category": "Time Controlled Components"},
+    # Heavy Components (updated prices from new spreadsheet, quantities applied)
+    {"inspection": "Propeller Change (2EA)",  "int1": None, "param1": None,     "int2": 6000,  "param2": "FH",  "mh": 80,    "mat": 350000.00,  "category": "Propellers"},
+    {"inspection": "Engine Change (2EA)",     "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",  "mh": 360,   "mat": 2400000.00, "category": "Engines"},
+    {"inspection": "Landing Gear Overhaul",   "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",  "mh": 85,    "mat": 850000.00,  "category": "Landing Gear"},
+    {"inspection": "Brakes (4EA)",            "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",  "mh": 8,     "mat": 80000.00,   "category": "Landing Gear"},
+    {"inspection": "NLG Tires (2EA)",         "int1": None, "param1": None,     "int2": 250,   "param2": "FC",  "mh": 4,     "mat": 1746.72,    "category": "Landing Gear"},
+    {"inspection": "MLG Tires (4EA)",         "int1": None, "param1": None,     "int2": 150,   "param2": "FC",  "mh": 16,    "mat": 7600.00,    "category": "Landing Gear"},
+    {"inspection": "APU Overhaul",            "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",  "mh": 16,    "mat": 123000.00,  "category": "APU"},
+    # Time Controlled Components
+    {"inspection": "Time Controlled Items",   "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",  "mh": 40,    "mat": 80000.00,   "category": "Time Controlled Components"},
 ]
 
 
 # ----------------------------------------------------------------
-# CATEGORY-SPECIFIC FACTOR WEIGHTS
+# MOD VARIANT FACTORS (multiplier vs MOD 10 baseline)
 # ----------------------------------------------------------------
+# MOD 10: PW119B, reference configuration. All factors = 1.00
+# MOD 20: PW119C (+5% thermodynamic power), higher single-engine ceiling.
+#          Engine/propeller slightly higher costs, all else identical.
+# MOD 30: PW119C + ground spoilers (standard) + 20deg flaps for T/O.
+#          Better airfield performance. Adds spoiler system maintenance.
+MOD_FACTORS = {
+    "MOD 10": {
+        "Airframe Checks": 1.00, "APU Inspections": 1.00, "FH-Based Tasks": 1.00,
+        "Fatigue Damage (FD)": 1.00, "Corrosion Prevention (CP)": 1.00,
+        "Structural Sampling (SSI)": 1.00, "Engines": 1.00, "Propellers": 1.00,
+        "Landing Gear": 1.00, "APU": 1.00, "Time Controlled Components": 1.00,
+    },
+    "MOD 20": {
+        "Airframe Checks": 1.00, "APU Inspections": 1.00, "FH-Based Tasks": 1.00,
+        "Fatigue Damage (FD)": 1.00, "Corrosion Prevention (CP)": 1.00,
+        "Structural Sampling (SSI)": 1.00, "Engines": 1.04, "Propellers": 1.02,
+        "Landing Gear": 1.00, "APU": 1.00, "Time Controlled Components": 1.00,
+    },
+    "MOD 30": {
+        "Airframe Checks": 1.03, "APU Inspections": 1.00, "FH-Based Tasks": 1.02,
+        "Fatigue Damage (FD)": 1.00, "Corrosion Prevention (CP)": 1.00,
+        "Structural Sampling (SSI)": 1.00, "Engines": 1.04, "Propellers": 1.02,
+        "Landing Gear": 1.01, "APU": 1.00, "Time Controlled Components": 1.00,
+    },
+}
 # Each environment/operational factor has different severity per category.
 # Weight = how much of the base factor applies to this category.
 # e.g., Tropical x1.12 with airframe weight 1.0 => full +12%
@@ -132,11 +168,36 @@ STOL_WEIGHTS = {
 }
 
 
-def get_category_factor(category, environment, gravel_pct, stol_pct):
-    """Compute combined adjustment factor for a specific category."""
-    base_env = ENVIRONMENT_FACTORS[environment]
-    env_weight = ENV_WEIGHTS.get(environment, {}).get(category, 1.0)
-    env_applied = 1.0 + (base_env - 1.0) * env_weight
+def get_category_factor(category, env_mix, gravel_pct, stol_pct, mod_variant="MOD 10"):
+    """Compute combined adjustment factor for a specific category using blended environment.
+    The 5 operational environments (Temperate, Tropical, Arid, Coastal, Cold) are blended
+    as a weighted average summing to 100%. High Altitude is applied as an independent
+    percentage-based adder on top. MOD variant factor is applied multiplicatively."""
+    # Blended environment factor from the 5 ops environments
+    OPS_ENVS = ["Temperate", "Tropical / Humid", "Arid / Desert", "Coastal / Marine", "Cold / Arctic"]
+    ops_total = sum(env_mix.get(e, 0) for e in OPS_ENVS)
+
+    env_applied = 0.0
+    if ops_total > 0:
+        for env_name in OPS_ENVS:
+            pct = env_mix.get(env_name, 0)
+            if pct <= 0:
+                continue
+            weight_frac = pct / ops_total
+            base_env = ENVIRONMENT_FACTORS.get(env_name, 1.0)
+            env_weight = ENV_WEIGHTS.get(env_name, {}).get(category, 1.0)
+            env_cat = 1.0 + (base_env - 1.0) * env_weight
+            env_applied += env_cat * weight_frac
+    else:
+        env_applied = 1.0
+
+    # High Altitude: independent adder based on percentage of ops at high altitude
+    ha_pct = env_mix.get("High Altitude", 0)
+    if ha_pct > 0:
+        ha_base = ENVIRONMENT_FACTORS.get("High Altitude", 1.04)
+        ha_weight = ENV_WEIGHTS.get("High Altitude", {}).get(category, 1.0)
+        ha_adder = (ha_base - 1.0) * ha_weight * (ha_pct / 100)
+        env_applied += ha_adder
 
     gravel_base = (gravel_pct / 100) * 0.15
     gravel_weight = GRAVEL_WEIGHTS.get(category, 1.0)
@@ -146,13 +207,17 @@ def get_category_factor(category, environment, gravel_pct, stol_pct):
     stol_weight = STOL_WEIGHTS.get(category, 1.0)
     stol_applied = 1.0 + stol_base * stol_weight
 
-    return env_applied * gravel_applied * stol_applied, env_applied, gravel_applied, stol_applied
+    # MOD variant factor
+    mod_factor = MOD_FACTORS.get(mod_variant, {}).get(category, 1.0)
+
+    combined = env_applied * gravel_applied * stol_applied * mod_factor
+    return combined, env_applied, gravel_applied, stol_applied
 
 
 # ----------------------------------------------------------------
 # DMC CALCULATION ENGINE
 # ----------------------------------------------------------------
-def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, environment, gravel_pct, stol_pct):
+def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_mix, gravel_pct, stol_pct, mod_variant="MOD 10"):
     results = []
 
     for item in data:
@@ -164,8 +229,8 @@ def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, environment, grav
         mat = item["mat"]
         cat = item["category"]
 
-        # Category-specific combined factor
-        cat_factor, _, _, _ = get_category_factor(cat, environment, gravel_pct, stol_pct)
+        # Category-specific combined factor (includes MOD variant)
+        cat_factor, _, _, _ = get_category_factor(cat, env_mix, gravel_pct, stol_pct, mod_variant)
 
         # Occurrence 1 (calendar)
         occ1 = 0.0
@@ -225,13 +290,14 @@ def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, environment, grav
 if "setup" not in st.session_state:
     st.session_state.setup = {
         "aircraft_type": "Do 328-100 (Turboprop)",
+        "mod_variant": "MOD 10",
         "operator": "",
         "base_country": "",
         "fh_per_year": 2000,
         "fc_per_year": 2500,
         "fh_fc_ratio": 0.80,
         "apu_hrs_per_year": 2200,
-        "environment": "Temperate",
+        "env_mix": {"Temperate": 100, "Tropical / Humid": 0, "Arid / Desert": 0, "Coastal / Marine": 0, "Cold / Arctic": 0, "High Altitude": 0},
         "gravel_pct": 0,
         "labour_rate": 85.0,
         "stol_pct": 0,
@@ -646,7 +712,18 @@ elif st.session_state.page == "Setup & Calculate":
             index=list(AIRCRAFT_TYPES.keys()).index(s["aircraft_type"]))
         s["aircraft_type"] = aircraft_type
         ac = AIRCRAFT_TYPES[aircraft_type]
-        st.markdown(f'<div class="info-box info-slate"><strong>{ac["full_name"]}</strong><br>Engines: {ac["engines"]} | Pax: {ac["pax"]}<br><span style="color:#94A3B8">{ac["description"]}</span></div>', unsafe_allow_html=True)
+
+        # MOD variant for Turboprop
+        if "Turboprop" in aircraft_type or "328-100" in aircraft_type:
+            mod_opts = ["MOD 10", "MOD 20", "MOD 30"]
+            mod_idx = mod_opts.index(s.get("mod_variant", "MOD 10")) if s.get("mod_variant", "MOD 10") in mod_opts else 0
+            s["mod_variant"] = st.selectbox("Configuration Variant", mod_opts, index=mod_idx,
+                help="MOD 10: Base config | MOD 20: Enhanced avionics | MOD 30: Full modernisation")
+            st.markdown(f'<div class="info-box info-slate"><strong>{ac["full_name"]} -- {s["mod_variant"]}</strong><br>Engines: {ac["engines"]} | Pax: {ac["pax"]}<br><span style="color:#94A3B8">{ac["description"]}</span></div>', unsafe_allow_html=True)
+        else:
+            s["mod_variant"] = "N/A"
+            st.markdown(f'<div class="info-box info-slate"><strong>{ac["full_name"]}</strong><br>Engines: {ac["engines"]} | Pax: {ac["pax"]}<br><span style="color:#94A3B8">{ac["description"]}</span></div>', unsafe_allow_html=True)
+
         s["operator"] = st.text_input("Operator Name", value=s["operator"], placeholder="e.g. UMSI Guinea, Nolinor Aviation")
         s["base_country"] = st.selectbox("Base Country", [""] + COUNTRIES,
             index=(COUNTRIES.index(s["base_country"]) + 1) if s["base_country"] in COUNTRIES else 0)
@@ -672,14 +749,34 @@ elif st.session_state.page == "Setup & Calculate":
     col3, col4 = st.columns(2)
 
     with col3:
-        st.markdown(f'<div class="s-card"><div class="s-card-t">{svg_icon("globe", 18)} Operating Environment</div></div>', unsafe_allow_html=True)
-        s["environment"] = st.selectbox("Primary Environment", ENVIRONMENTS, index=ENVIRONMENTS.index(s["environment"]))
-        ef = ENVIRONMENT_FACTORS[s["environment"]]
-        env_desc = {"Temperate": "Baseline", "Tropical / Humid": "+12% corrosion & humidity",
-            "Arid / Desert": "+8% dust & FOD ingestion", "Coastal / Marine": "+10% salt corrosion",
-            "Cold / Arctic": "+6% cold-start & de-icing", "High Altitude": "+4% engine stress"}
-        st.markdown(f'<div class="info-box info-amber">Environment Factor: <strong>x{ef:.2f}</strong> -- {env_desc[s["environment"]]}</div>', unsafe_allow_html=True)
-        s["gravel_pct"] = st.slider("Gravel Runway Operations (%)", 0, 100, s["gravel_pct"], 5)
+        st.markdown(f'<div class="s-card"><div class="s-card-t">{svg_icon("globe", 18)} Operating Environment Mix</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="info-box info-blue">Set the percentage of operations per climate zone. Total must equal 100%.</div>', unsafe_allow_html=True)
+
+        env_mix = s.get("env_mix", {"Temperate": 100, "Tropical / Humid": 0, "Arid / Desert": 0, "Coastal / Marine": 0, "Cold / Arctic": 0, "High Altitude": 0})
+        # Only these 5 are the operational environment mix (must sum to 100%)
+        OPS_ENVS = ["Temperate", "Tropical / Humid", "Arid / Desert", "Coastal / Marine", "Cold / Arctic"]
+        ops_labels = {"Temperate": "Temperate (baseline)", "Tropical / Humid": "Tropical / Humid (+12%)",
+            "Arid / Desert": "Arid / Desert (+8%)", "Coastal / Marine": "Coastal / Marine (+10%)",
+            "Cold / Arctic": "Cold / Arctic (+6%)"}
+
+        new_mix = {}
+        for env_key in OPS_ENVS:
+            new_mix[env_key] = st.slider(ops_labels[env_key], 0, 100, env_mix.get(env_key, 0), 5, key=f"env_{env_key}")
+
+        ops_total = sum(new_mix.values())
+
+        if ops_total == 100:
+            blended_base = sum((ENVIRONMENT_FACTORS[e] * p / 100) for e, p in new_mix.items() if p > 0)
+            active_envs = [f"{e.split('/')[0].strip()} {p}%" for e, p in new_mix.items() if p > 0]
+            st.markdown(f'<div class="info-box info-green">Blended Env Factor: <strong>x{blended_base:.3f}</strong> -- {" | ".join(active_envs)}</div>', unsafe_allow_html=True)
+        elif ops_total == 0:
+            st.markdown(f'<div class="info-box info-amber">Set at least one environment percentage.</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="info-box info-amber">Total is <strong>{ops_total}%</strong> -- must equal 100%. Adjust sliders.</div>', unsafe_allow_html=True)
+
+        # Keep High Altitude in the mix dict (set separately below) but not in the 100% constraint
+        new_mix["High Altitude"] = env_mix.get("High Altitude", 0)
+        s["env_mix"] = new_mix
 
     with col4:
         st.markdown(f'<div class="s-card"><div class="s-card-t">{svg_icon("dollar", 18)} Cost & Operations</div></div>', unsafe_allow_html=True)
@@ -692,22 +789,32 @@ elif st.session_state.page == "Setup & Calculate":
         else:
             lr = "Premium (Western Europe / North America)"
         st.markdown(f'<div class="info-box info-slate">{lr}</div>', unsafe_allow_html=True)
+
+        st.markdown(f'<div class="s-card"><div class="s-card-t">{svg_icon("target", 18)} Operational Conditions</div></div>', unsafe_allow_html=True)
         s["stol_pct"] = st.slider("STOL Operations (%)", 0, 100, s["stol_pct"], 5)
+        ha_pct = st.slider("High Altitude Operations (%)", 0, 100, env_mix.get("High Altitude", 0), 5,
+            help="Percentage of operations from airfields above 5,000 ft. Applied as independent adder (+4% base).")
+        s["env_mix"]["High Altitude"] = ha_pct
+        s["gravel_pct"] = st.slider("Gravel Runway Operations (%)", 0, 100, s["gravel_pct"], 5)
 
     st.session_state.setup = s
 
     # Compute factors
+    env_mix = s.get("env_mix", {"Temperate": 100})
     gf = 1.0 + (s["gravel_pct"] / 100) * 0.15
     sf = 1.0 + (s["stol_pct"] / 100) * 0.10
-    combined = ef * gf * sf
+    blended_env = sum((ENVIRONMENT_FACTORS[e] * p / 100) for e, p in env_mix.items() if p > 0) if sum(env_mix.values()) == 100 else 1.0
+    active_envs_short = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in env_mix.items() if p > 0])
+    mod_label = s.get("mod_variant", "N/A")
+    mod_display = f'<div class="metric-unit">{mod_label}</div>' if mod_label != "N/A" else ""
 
     # Summary bar
     st.markdown("---")
     st.markdown(f"""
     <div class="metrics">
-        <div class="metric"><div class="metric-label">Aircraft</div><div class="metric-val" style="font-size:1rem;">{s["aircraft_type"]}</div><div class="metric-unit">{s["operator"] or "N/A"} | {s["base_country"] or "N/A"}</div></div>
+        <div class="metric"><div class="metric-label">Aircraft</div><div class="metric-val" style="font-size:0.95rem;">{s["aircraft_type"]}</div>{mod_display}<div class="metric-unit">{s["operator"] or "N/A"} | {s["base_country"] or "N/A"}</div></div>
         <div class="metric"><div class="metric-label">Utilization</div><div class="metric-val" style="font-size:1rem;">{s["fh_per_year"]:,} FH / {s["fc_per_year"]:,} FC</div><div class="metric-unit">APU: {s["apu_hrs_per_year"]:,} hrs | Ratio: {ratio}</div></div>
-        <div class="metric"><div class="metric-label">Combined Factor</div><div class="metric-val">x{combined:.3f}</div><div class="metric-unit">Env x{ef:.2f} | Gravel x{gf:.2f} | STOL x{sf:.2f}</div></div>
+        <div class="metric"><div class="metric-label">Blended Env</div><div class="metric-val">x{blended_env:.3f}</div><div class="metric-unit">{active_envs_short}</div></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -728,7 +835,7 @@ elif st.session_state.page == "Setup & Calculate":
     if st.session_state.get("calculated", False):
         with st.spinner("Computing DMC for all maintenance items..."):
             results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
-                s["apu_hrs_per_year"], s["labour_rate"], s["environment"], s["gravel_pct"], s["stol_pct"])
+                s["apu_hrs_per_year"], s["labour_rate"], s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
             df = pd.DataFrame(results)
             st.session_state.calc_results = results
 
@@ -820,7 +927,7 @@ elif st.session_state.page == "Setup & Calculate":
         # Add per-category adjustment factors
         cat_factors_list = []
         for cat_name in cat_disp["Category"]:
-            cf, _, _, _ = get_category_factor(cat_name, s["environment"], s["gravel_pct"], s["stol_pct"])
+            cf, _, _, _ = get_category_factor(cat_name, s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
             cat_factors_list.append(round(cf, 4))
         cat_disp["Adj. Factor"] = cat_factors_list
 
@@ -836,7 +943,7 @@ elif st.session_state.page == "Setup & Calculate":
         factor_rows = []
         all_cats = sorted(df["Category"].unique().tolist())
         for cat_name in all_cats:
-            cf, ef_cat, gf_cat, sf_cat = get_category_factor(cat_name, s["environment"], s["gravel_pct"], s["stol_pct"])
+            cf, ef_cat, gf_cat, sf_cat = get_category_factor(cat_name, s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
             factor_rows.append({
                 "Category": cat_name,
                 "Env Factor": round(ef_cat, 4),
@@ -894,13 +1001,14 @@ elif st.session_state.page == "Report":
         st.error("Please complete Setup and Calculate first.")
         st.stop()
 
-    ef = ENVIRONMENT_FACTORS[s["environment"]]
+    env_mix = s.get("env_mix", {"Temperate": 100})
     gf = 1.0 + (s["gravel_pct"] / 100) * 0.15
     sf = 1.0 + (s["stol_pct"] / 100) * 0.10
-    combined = ef * gf * sf
+    blended_env = sum((ENVIRONMENT_FACTORS[e] * p / 100) for e, p in env_mix.items() if p > 0) if sum(env_mix.values()) == 100 else 1.0
+    active_envs_str = ", ".join([f"{e} {p}%" for e, p in env_mix.items() if p > 0])
 
     results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
-        s["apu_hrs_per_year"], s["labour_rate"], s["environment"], s["gravel_pct"], s["stol_pct"])
+        s["apu_hrs_per_year"], s["labour_rate"], env_mix, s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
     df = pd.DataFrame(results)
 
     total_labour = df["DMC Labour (EUR/FH)"].sum()
@@ -979,11 +1087,11 @@ elif st.session_state.page == "Report":
             ("APU Hrs / Year", f"{s['apu_hrs_per_year']:,}"),
             ("FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"),
             ("Labour Rate (EUR/hr)", f"{s['labour_rate']:.2f}"),
-            ("Environment", s["environment"]),
-            ("Environment Factor", f"x{ef:.2f}"),
+            ("Environment", active_envs_str),
+            ("Blended Env Factor", f"x{blended_env:.3f}"),
             ("Gravel Operations", f"{s['gravel_pct']}% (x{gf:.2f})"),
             ("STOL Operations", f"{s['stol_pct']}% (x{sf:.2f})"),
-            ("Combined Factor", f"x{combined:.3f}"),
+            ("Factors", "Category-specific (see detail)"),
         ]
         for param, val in param_data:
             ws1.cell(row=row, column=1, value=param).font = bold_font
@@ -1084,337 +1192,271 @@ elif st.session_state.page == "Report":
 
     def generate_pdf():
         import io
+        import tempfile
         from datetime import datetime
         from reportlab.lib.pagesizes import A4
         from reportlab.lib import colors
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import mm, cm
+        from reportlab.lib.units import mm
         from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable, KeepTogether
-        from reportlab.pdfgen import canvas as pdfcanvas
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, Image
 
         buffer = io.BytesIO()
 
-        # Custom colors
-        NAVY = colors.HexColor("#0A1628")
-        DARK_BLUE = colors.HexColor("#1E293B")
-        BRAND_BLUE = colors.HexColor("#2563EB")
-        LIGHT_BLUE = colors.HexColor("#EFF6FF")
-        CYAN = colors.HexColor("#22D3EE")
-        SLATE_600 = colors.HexColor("#475569")
-        SLATE_400 = colors.HexColor("#94A3B8")
-        SLATE_200 = colors.HexColor("#E2E8F0")
-        SLATE_100 = colors.HexColor("#F1F5F9")
-        SLATE_50 = colors.HexColor("#F8FAFC")
-        GREEN = colors.HexColor("#059669")
+        NAVY = colors.HexColor("#0A1628"); DARK_BLUE = colors.HexColor("#1E293B")
+        BRAND_BLUE = colors.HexColor("#2563EB"); LIGHT_BLUE = colors.HexColor("#EFF6FF")
+        SLATE_600 = colors.HexColor("#475569"); SLATE_400 = colors.HexColor("#94A3B8")
+        SLATE_200 = colors.HexColor("#E2E8F0"); SLATE_50 = colors.HexColor("#F8FAFC")
         WHITE = colors.white
-
         page_w, page_h = A4
 
-        # Page template with header/footer
-        class PDFTemplate:
-            def __init__(self, doc):
-                self.doc = doc
+        # Generate chart images for PDF
+        cat_sum_pdf = df.groupby("Category").agg({
+            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
+        }).reset_index().sort_values("DMC Total (EUR/FH)", ascending=False)
+        cat_sum_pdf["pct"] = (cat_sum_pdf["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
 
+        # Pie chart
+        fig_pie = go.Figure(data=[go.Pie(
+            labels=cat_sum_pdf["Category"], values=cat_sum_pdf["DMC Total (EUR/FH)"].round(2),
+            hole=0.5, marker=dict(colors=["#2563EB","#0891B2","#059669","#D97706","#7C3AED","#DC2626","#475569","#EC4899","#F59E0B","#10B981","#6366F1"]),
+            textinfo="label+percent", textfont_size=8, textposition="outside",
+        )])
+        fig_pie.update_layout(title=dict(text="DMC Distribution", font=dict(size=11)),
+            height=300, width=400, margin=dict(t=40,b=10,l=10,r=10), showlegend=False,
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        pie_bytes = fig_pie.to_image(format="png", scale=2)
+        pie_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        pie_file.write(pie_bytes); pie_file.close()
+
+        # Bar chart
+        fig_bar = go.Figure()
+        fig_bar.add_trace(go.Bar(name="Labour", x=cat_sum_pdf["Category"], y=cat_sum_pdf["DMC Labour (EUR/FH)"].round(2), marker_color="#2563EB"))
+        fig_bar.add_trace(go.Bar(name="Material", x=cat_sum_pdf["Category"], y=cat_sum_pdf["DMC Material (EUR/FH)"].round(2), marker_color="#22D3EE"))
+        fig_bar.update_layout(title=dict(text="Labour vs Material", font=dict(size=11)),
+            barmode="stack", height=300, width=400, margin=dict(t=40,b=80,l=40,r=10),
+            xaxis=dict(tickangle=-40, tickfont=dict(size=7)),
+            yaxis=dict(title=dict(text="EUR/FH", font=dict(size=9))),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=8)),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        bar_bytes = fig_bar.to_image(format="png", scale=2)
+        bar_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        bar_file.write(bar_bytes); bar_file.close()
+
+        # Page template
+        class PDFTemplate:
             def on_page(self, canvas, doc):
                 canvas.saveState()
-                # Header line
-                canvas.setStrokeColor(BRAND_BLUE)
-                canvas.setLineWidth(2)
-                canvas.line(15*mm, page_h - 12*mm, page_w - 15*mm, page_h - 12*mm)
-
-                # Header text
-                canvas.setFont("Helvetica-Bold", 7)
-                canvas.setFillColor(SLATE_400)
-                canvas.drawString(15*mm, page_h - 10*mm, "MAINTEDGE  |  DIRECT MAINTENANCE COST REPORT")
-                canvas.drawRightString(page_w - 15*mm, page_h - 10*mm, "DEUTSCHE AIRCRAFT GMBH")
-
-                # Footer
-                canvas.setStrokeColor(SLATE_200)
-                canvas.setLineWidth(0.5)
-                canvas.line(15*mm, 14*mm, page_w - 15*mm, 14*mm)
-                canvas.setFont("Helvetica", 6.5)
-                canvas.setFillColor(SLATE_400)
-                canvas.drawString(15*mm, 10*mm, "CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
-                canvas.drawRightString(page_w - 15*mm, 10*mm, f"Page {doc.page}")
+                canvas.setStrokeColor(BRAND_BLUE); canvas.setLineWidth(1.5)
+                canvas.line(15*mm, page_h-12*mm, page_w-15*mm, page_h-12*mm)
+                canvas.setFont("Helvetica-Bold",7); canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm, page_h-10*mm, "MAINTEDGE  |  DIRECT MAINTENANCE COST REPORT")
+                canvas.drawRightString(page_w-15*mm, page_h-10*mm, "DEUTSCHE AIRCRAFT GMBH")
+                canvas.setStrokeColor(SLATE_200); canvas.setLineWidth(0.5)
+                canvas.line(15*mm,14*mm,page_w-15*mm,14*mm)
+                canvas.setFont("Helvetica",6.5); canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm,10*mm,"CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
+                canvas.drawRightString(page_w-15*mm,10*mm,f"Page {doc.page}")
                 canvas.restoreState()
 
             def on_first_page(self, canvas, doc):
                 canvas.saveState()
-
-                # Full-width navy header banner
-                canvas.setFillColor(NAVY)
-                canvas.rect(0, page_h - 55*mm, page_w, 55*mm, fill=1, stroke=0)
-
-                # Accent line at bottom of banner
-                canvas.setStrokeColor(BRAND_BLUE)
-                canvas.setLineWidth(2.5)
-                canvas.line(0, page_h - 55*mm, page_w, page_h - 55*mm)
-
-                # Brand text
-                canvas.setFont("Helvetica", 7)
-                canvas.setFillColor(SLATE_400)
-                canvas.drawString(20*mm, page_h - 15*mm, "DEUTSCHE AIRCRAFT GMBH")
-
-                # Title
-                canvas.setFont("Helvetica-Bold", 26)
-                canvas.setFillColor(WHITE)
-                canvas.drawString(20*mm, page_h - 28*mm, "MaintEdge")
-
-                # Subtitle
-                canvas.setFont("Helvetica", 13)
-                canvas.setFillColor(colors.HexColor("#CBD5E1"))
-                canvas.drawString(20*mm, page_h - 36*mm, "Direct Maintenance Cost Report")
-
-                # Meta info
-                canvas.setFont("Helvetica", 8)
-                canvas.setFillColor(SLATE_400)
-                canvas.drawString(20*mm, page_h - 46*mm,
-                    f"{s['aircraft_type']}  |  {s['operator'] or 'N/A'}  |  {s['base_country'] or 'N/A'}  |  {datetime.now().strftime('%d %B %Y')}")
-
-                # Right side: total DMC highlight box
-                box_x = page_w - 70*mm
-                box_y = page_h - 48*mm
-                canvas.setFillColor(colors.HexColor("#162240"))
-                canvas.roundRect(box_x, box_y, 52*mm, 28*mm, 3*mm, fill=1, stroke=0)
-                canvas.setStrokeColor(colors.HexColor("#2563EB50"))
-                canvas.setLineWidth(0.5)
-                canvas.roundRect(box_x, box_y, 52*mm, 28*mm, 3*mm, fill=0, stroke=1)
-
-                canvas.setFont("Helvetica", 6.5)
-                canvas.setFillColor(colors.HexColor("#60A5FA"))
-                canvas.drawCentredString(box_x + 26*mm, box_y + 21*mm, "TOTAL DMC")
-                canvas.setFont("Helvetica-Bold", 16)
-                canvas.setFillColor(WHITE)
-                canvas.drawCentredString(box_x + 26*mm, box_y + 11*mm, f"EUR {total_dmc:,.2f}")
-                canvas.setFont("Helvetica", 7)
-                canvas.setFillColor(SLATE_400)
-                canvas.drawCentredString(box_x + 26*mm, box_y + 4*mm, "per Flight Hour")
-
-                # Footer on first page too
-                canvas.setStrokeColor(SLATE_200)
-                canvas.setLineWidth(0.5)
-                canvas.line(15*mm, 14*mm, page_w - 15*mm, 14*mm)
-                canvas.setFont("Helvetica", 6.5)
-                canvas.setFillColor(SLATE_400)
-                canvas.drawString(15*mm, 10*mm, "CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
-                canvas.drawRightString(page_w - 15*mm, 10*mm, f"Page {doc.page}")
-
+                canvas.setFillColor(NAVY); canvas.rect(0, page_h-52*mm, page_w, 52*mm, fill=1, stroke=0)
+                canvas.setStrokeColor(BRAND_BLUE); canvas.setLineWidth(2.5)
+                canvas.line(0, page_h-52*mm, page_w, page_h-52*mm)
+                canvas.setFont("Helvetica",7); canvas.setFillColor(SLATE_400)
+                canvas.drawString(20*mm, page_h-14*mm, "DEUTSCHE AIRCRAFT GMBH")
+                canvas.setFont("Helvetica-Bold",24); canvas.setFillColor(WHITE)
+                canvas.drawString(20*mm, page_h-26*mm, "MaintEdge")
+                canvas.setFont("Helvetica",12); canvas.setFillColor(colors.HexColor("#CBD5E1"))
+                canvas.drawString(20*mm, page_h-34*mm, "Direct Maintenance Cost Report")
+                mod_str = f"  |  {s.get('mod_variant','')}" if s.get('mod_variant','N/A') != 'N/A' else ""
+                canvas.setFont("Helvetica",8); canvas.setFillColor(SLATE_400)
+                canvas.drawString(20*mm, page_h-43*mm, f"{s['aircraft_type']}{mod_str}  |  {s['operator'] or 'N/A'}  |  {s['base_country'] or 'N/A'}  |  {datetime.now().strftime('%d %B %Y')}")
+                # DMC box
+                bx = page_w-68*mm; by = page_h-46*mm
+                canvas.setFillColor(colors.HexColor("#162240")); canvas.roundRect(bx,by,50*mm,26*mm,3*mm,fill=1,stroke=0)
+                canvas.setFont("Helvetica",6.5); canvas.setFillColor(colors.HexColor("#60A5FA"))
+                canvas.drawCentredString(bx+25*mm, by+19*mm, "TOTAL DMC")
+                canvas.setFont("Helvetica-Bold",15); canvas.setFillColor(WHITE)
+                canvas.drawCentredString(bx+25*mm, by+10*mm, f"EUR {total_dmc:,.2f}")
+                canvas.setFont("Helvetica",7); canvas.setFillColor(SLATE_400)
+                canvas.drawCentredString(bx+25*mm, by+4*mm, "per Flight Hour")
+                # Footer
+                canvas.setStrokeColor(SLATE_200); canvas.setLineWidth(0.5)
+                canvas.line(15*mm,14*mm,page_w-15*mm,14*mm)
+                canvas.setFont("Helvetica",6.5); canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm,10*mm,"CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
+                canvas.drawRightString(page_w-15*mm,10*mm,f"Page {doc.page}")
                 canvas.restoreState()
 
-        tmpl = PDFTemplate(None)
-
+        tmpl = PDFTemplate()
         doc = SimpleDocTemplate(buffer, pagesize=A4,
-            topMargin=60*mm, bottomMargin=20*mm, leftMargin=15*mm, rightMargin=15*mm)
+            topMargin=56*mm, bottomMargin=18*mm, leftMargin=15*mm, rightMargin=15*mm)
 
-        styles = getSampleStyleSheet()
-        styles.add(ParagraphStyle(name="SH", fontName="Helvetica-Bold", fontSize=12,
-            textColor=NAVY, spaceBefore=10, spaceAfter=6))
-        styles.add(ParagraphStyle(name="SH2", fontName="Helvetica-Bold", fontSize=10,
-            textColor=BRAND_BLUE, spaceBefore=8, spaceAfter=4))
-        styles.add(ParagraphStyle(name="Body9", fontName="Helvetica", fontSize=9,
-            textColor=SLATE_600, spaceAfter=3, leading=13))
-        styles.add(ParagraphStyle(name="Small", fontName="Helvetica", fontSize=7.5,
-            textColor=SLATE_400, spaceAfter=2))
+        # Tight styles
+        SH = ParagraphStyle("SH", fontName="Helvetica-Bold", fontSize=11, textColor=NAVY, spaceBefore=6, spaceAfter=2, leading=14)
+        B9 = ParagraphStyle("B9", fontName="Helvetica", fontSize=8.5, textColor=SLATE_600, spaceAfter=2, leading=12, alignment=TA_JUSTIFY)
+        SM = ParagraphStyle("SM", fontName="Helvetica", fontSize=7, textColor=SLATE_400, spaceAfter=1, leading=9)
+        def hr(): return HRFlowable(width="100%", thickness=0.4, color=SLATE_200, spaceAfter=3)
+        def sp(n): return Spacer(1, n*mm)
 
         story = []
-
-        # ── Section 1: Operational Parameters ──
-        story.append(Paragraph("1. Operational Parameters", styles["SH"]))
-        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=6))
-
-        param_rows = [
-            ["Parameter", "Value", "Parameter", "Value"],
-            ["Aircraft Type", s["aircraft_type"], "Operator", s["operator"] or "N/A"],
-            ["Base Country", s["base_country"] or "N/A", "Labour Rate", f"EUR {s['labour_rate']:.2f}/hr"],
-            ["FH / Year", f"{s['fh_per_year']:,}", "FC / Year", f"{s['fc_per_year']:,}"],
-            ["APU Hrs / Year", f"{s['apu_hrs_per_year']:,}", "FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"],
-            ["Environment", s["environment"], "Env. Factor", f"x{ef:.2f}"],
-            ["Gravel Ops", f"{s['gravel_pct']}% (x{gf:.2f})", "STOL Ops", f"{s['stol_pct']}% (x{sf:.2f})"],
-            ["Combined Factor", f"x{combined:.3f}", "", ""],
-        ]
-        pt = Table(param_rows, colWidths=[38*mm, 42*mm, 38*mm, 42*mm])
-        pt.setStyle(TableStyle([
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8.5),
-            ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
-            ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
-            ("FONTNAME", (2, 1), (2, -1), "Helvetica-Bold"),
-            ("TEXTCOLOR", (0, 1), (0, -1), DARK_BLUE),
-            ("TEXTCOLOR", (2, 1), (2, -1), DARK_BLUE),
-            ("TEXTCOLOR", (1, 1), (1, -1), SLATE_600),
-            ("TEXTCOLOR", (3, 1), (3, -1), SLATE_600),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, SLATE_50]),
-            ("GRID", (0, 0), (-1, -1), 0.4, SLATE_200),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-            ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ]))
-        story.append(pt)
-        story.append(Spacer(1, 8*mm))
-
-        # ── Section 2: DMC Summary ──
-        story.append(Paragraph("2. DMC Summary", styles["SH"]))
-        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=6))
-
         labour_pct_val = (total_labour / total_dmc * 100) if total_dmc > 0 else 0
         material_pct_val = 100 - labour_pct_val
         unsched = total_dmc * 0.40
         logistics = total_dmc * 0.15
         total_all_in = total_dmc + unsched + logistics
+        mod_str = s.get('mod_variant', 'N/A')
+        active_envs_display = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in s.get("env_mix",{}).items() if p > 0])
 
-        sum_rows = [
-            ["Component", "EUR / FH", "EUR / Year", "% of Total"],
-            ["Scheduled DMC (Total)", f"{total_dmc:,.2f}", f"{total_dmc * s['fh_per_year']:,.0f}", "100.0%"],
-            ["  Labour", f"{total_labour:,.2f}", f"{total_labour * s['fh_per_year']:,.0f}", f"{labour_pct_val:.1f}%"],
-            ["  Material", f"{total_material:,.2f}", f"{total_material * s['fh_per_year']:,.0f}", f"{material_pct_val:.1f}%"],
-            ["Unscheduled Maintenance (40%)", f"{unsched:,.2f}", f"{unsched * s['fh_per_year']:,.0f}", "40.0%"],
-            ["Logistics & Customs (15%)", f"{logistics:,.2f}", f"{logistics * s['fh_per_year']:,.0f}", "15.0%"],
-            ["All-In DMC Estimate", f"{total_all_in:,.2f}", f"{total_all_in * s['fh_per_year']:,.0f}", "155.0%"],
+        # ── EXECUTIVE SUMMARY ──
+        story.append(Paragraph("Executive Summary", SH)); story.append(hr())
+        story.append(Paragraph(
+            f"This report presents the Direct Maintenance Cost (DMC) analysis for the <b>{s['aircraft_type']}"
+            f"{' (' + mod_str + ')' if mod_str != 'N/A' else ''}</b> operated by "
+            f"<b>{s['operator'] or 'N/A'}</b> based in <b>{s['base_country'] or 'N/A'}</b>. "
+            f"The analysis is based on an annual utilization of <b>{s['fh_per_year']:,} flight hours</b> and "
+            f"<b>{s['fc_per_year']:,} flight cycles</b>, with a labour rate of <b>EUR {s['labour_rate']:.2f}/hr</b>.",
+            B9))
+        story.append(Paragraph(
+            f"The computed <b>scheduled DMC is EUR {total_dmc:,.2f} per flight hour</b> "
+            f"(EUR {total_dmc * s['fh_per_year']:,.0f} per year), comprising EUR {total_labour:,.2f}/FH labour "
+            f"({labour_pct_val:.0f}%) and EUR {total_material:,.2f}/FH material ({material_pct_val:.0f}%). "
+            f"Including estimated unscheduled maintenance (40%) and logistics costs (15%), the "
+            f"<b>all-in DMC estimate is EUR {total_all_in:,.2f} per flight hour</b> "
+            f"(EUR {total_all_in * s['fh_per_year']:,.0f} per year).",
+            B9))
+
+        # Top 3 cost drivers
+        top3 = cat_sum_pdf.head(3)
+        drivers = ", ".join([f"{r['Category']} ({r['pct']:.0f}%)" for _, r in top3.iterrows()])
+        story.append(Paragraph(
+            f"The dominant cost drivers are: <b>{drivers}</b>. "
+            f"Environmental profile: {active_envs_display}. "
+            f"Gravel operations: {s['gravel_pct']}%, STOL: {s['stol_pct']}%"
+            f"{', High Altitude: ' + str(s.get('env_mix',{}).get('High Altitude',0)) + '%' if s.get('env_mix',{}).get('High Altitude',0) > 0 else ''}.",
+            B9))
+        story.append(sp(3))
+
+        # ── 1. PARAMETERS ──
+        story.append(Paragraph("1. Operational Parameters", SH)); story.append(hr())
+        param_rows = [
+            ["Parameter", "Value", "Parameter", "Value"],
+            ["Aircraft", s["aircraft_type"], "MOD Variant", mod_str],
+            ["Operator", s["operator"] or "N/A", "Labour Rate", f"EUR {s['labour_rate']:.2f}/hr"],
+            ["Base Country", s["base_country"] or "N/A", "FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"],
+            ["FH / Year", f"{s['fh_per_year']:,}", "FC / Year", f"{s['fc_per_year']:,}"],
+            ["APU Hrs / Year", f"{s['apu_hrs_per_year']:,}", "Environment", active_envs_display[:40]],
+            ["Gravel Ops", f"{s['gravel_pct']}%", "STOL Ops", f"{s['stol_pct']}%"],
         ]
-        st2 = Table(sum_rows, colWidths=[50*mm, 35*mm, 40*mm, 30*mm])
-        st2.setStyle(TableStyle([
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8.5),
-            ("BACKGROUND", (0, 0), (-1, 0), NAVY),
-            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
-            ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#EFF6FF")),
-            ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
-            ("TEXTCOLOR", (1, 1), (1, 1), BRAND_BLUE),
-            ("FONTSIZE", (1, 1), (1, 1), 10),
-            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-            ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#0A1628")),
-            ("TEXTCOLOR", (0, -1), (-1, -1), WHITE),
-            ("FONTSIZE", (0, -1), (-1, -1), 10),
-            ("ROWBACKGROUNDS", (0, 2), (-1, -2), [WHITE, SLATE_50]),
-            ("GRID", (0, 0), (-1, -1), 0.4, SLATE_200),
-            ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-            ("LEFTPADDING", (0, 0), (0, -1), 8),
+        pt = Table(param_rows, colWidths=[32*mm, 48*mm, 32*mm, 48*mm])
+        pt.setStyle(TableStyle([
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,-1),8),
+            ("BACKGROUND",(0,0),(-1,0),DARK_BLUE),("TEXTCOLOR",(0,0),(-1,0),WHITE),
+            ("FONTNAME",(0,1),(0,-1),"Helvetica-Bold"),("FONTNAME",(2,1),(2,-1),"Helvetica-Bold"),
+            ("TEXTCOLOR",(0,1),(0,-1),DARK_BLUE),("TEXTCOLOR",(2,1),(2,-1),DARK_BLUE),
+            ("ROWBACKGROUNDS",(0,1),(-1,-1),[WHITE,SLATE_50]),
+            ("GRID",(0,0),(-1,-1),0.3,SLATE_200),("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+            ("TOPPADDING",(0,0),(-1,-1),3),("BOTTOMPADDING",(0,0),(-1,-1),3),("LEFTPADDING",(0,0),(-1,-1),5),
         ]))
-        story.append(st2)
-        story.append(Spacer(1, 6*mm))
+        story.append(pt); story.append(sp(3))
 
-        # ── Section 3: Category Breakdown ──
-        story.append(Paragraph("3. Category Breakdown", styles["SH"]))
-        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=6))
+        # ── 2. DMC SUMMARY ──
+        story.append(Paragraph("2. DMC Summary", SH)); story.append(hr())
+        sum_rows = [
+            ["Component", "EUR / FH", "EUR / Year", "%"],
+            ["Scheduled DMC", f"{total_dmc:,.2f}", f"{total_dmc * s['fh_per_year']:,.0f}", "100%"],
+            ["  Labour", f"{total_labour:,.2f}", f"{total_labour * s['fh_per_year']:,.0f}", f"{labour_pct_val:.0f}%"],
+            ["  Material", f"{total_material:,.2f}", f"{total_material * s['fh_per_year']:,.0f}", f"{material_pct_val:.0f}%"],
+            ["Unscheduled (40%)", f"{unsched:,.2f}", f"{unsched * s['fh_per_year']:,.0f}", "40%"],
+            ["Logistics (15%)", f"{logistics:,.2f}", f"{logistics * s['fh_per_year']:,.0f}", "15%"],
+            ["All-In Estimate", f"{total_all_in:,.2f}", f"{total_all_in * s['fh_per_year']:,.0f}", "155%"],
+        ]
+        st2 = Table(sum_rows, colWidths=[45*mm, 35*mm, 40*mm, 20*mm])
+        st2.setStyle(TableStyle([
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,-1),8),
+            ("BACKGROUND",(0,0),(-1,0),NAVY),("TEXTCOLOR",(0,0),(-1,0),WHITE),
+            ("BACKGROUND",(0,1),(-1,1),LIGHT_BLUE),("FONTNAME",(0,1),(-1,1),"Helvetica-Bold"),
+            ("TEXTCOLOR",(1,1),(1,1),BRAND_BLUE),("FONTSIZE",(1,1),(1,1),10),
+            ("FONTNAME",(0,-1),(-1,-1),"Helvetica-Bold"),
+            ("BACKGROUND",(0,-1),(-1,-1),NAVY),("TEXTCOLOR",(0,-1),(-1,-1),WHITE),("FONTSIZE",(0,-1),(-1,-1),9),
+            ("ROWBACKGROUNDS",(0,2),(-1,-2),[WHITE,SLATE_50]),
+            ("GRID",(0,0),(-1,-1),0.3,SLATE_200),("ALIGN",(1,0),(-1,-1),"CENTER"),
+            ("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(0,-1),6),
+        ]))
+        story.append(st2); story.append(sp(3))
 
-        cat_sum_pdf = df.groupby("Category").agg({
-            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
-        }).reset_index()
-        cat_sum_pdf = cat_sum_pdf.sort_values("DMC Total (EUR/FH)", ascending=False)
-        cat_sum_pdf["pct"] = (cat_sum_pdf["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+        # ── 3. CATEGORY BREAKDOWN WITH CHARTS ──
+        story.append(Paragraph("3. Category Breakdown", SH)); story.append(hr())
 
-        cat_rows = [["#", "Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "%"]]
+        # Charts side by side
+        chart_row = Table(
+            [[Image(pie_file.name, width=82*mm, height=62*mm), Image(bar_file.name, width=82*mm, height=62*mm)]],
+            colWidths=[84*mm, 84*mm])
+        chart_row.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"MIDDLE"),("ALIGN",(0,0),(-1,-1),"CENTER"),
+            ("TOPPADDING",(0,0),(-1,-1),0),("BOTTOMPADDING",(0,0),(-1,-1),0)]))
+        story.append(chart_row); story.append(sp(2))
+
+        # Category table
+        cat_rows = [["#", "Category", "Labour", "Material", "Total (EUR/FH)", "%"]]
         for idx, (_, r) in enumerate(cat_sum_pdf.iterrows(), 1):
             cat_rows.append([str(idx), r["Category"], f"{r['DMC Labour (EUR/FH)']:.2f}",
                 f"{r['DMC Material (EUR/FH)']:.2f}", f"{r['DMC Total (EUR/FH)']:.2f}", f"{r['pct']:.1f}%"])
-
-        ct = Table(cat_rows, colWidths=[8*mm, 48*mm, 28*mm, 28*mm, 28*mm, 16*mm])
+        ct = Table(cat_rows, colWidths=[8*mm, 45*mm, 25*mm, 25*mm, 30*mm, 14*mm])
         ct.setStyle(TableStyle([
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, SLATE_50]),
-            ("GRID", (0, 0), (-1, -1), 0.4, SLATE_200),
-            ("ALIGN", (0, 0), (0, -1), "CENTER"),
-            ("ALIGN", (2, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ("LEFTPADDING", (1, 0), (1, -1), 6),
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,-1),7.5),
+            ("BACKGROUND",(0,0),(-1,0),DARK_BLUE),("TEXTCOLOR",(0,0),(-1,0),WHITE),
+            ("ROWBACKGROUNDS",(0,1),(-1,-1),[WHITE,SLATE_50]),("GRID",(0,0),(-1,-1),0.3,SLATE_200),
+            ("ALIGN",(0,0),(0,-1),"CENTER"),("ALIGN",(2,0),(-1,-1),"CENTER"),
+            ("TOPPADDING",(0,0),(-1,-1),3),("BOTTOMPADDING",(0,0),(-1,-1),3),("LEFTPADDING",(1,0),(1,-1),4),
         ]))
-        story.append(ct)
+        story.append(ct); story.append(sp(3))
 
-        # ── Detailed Breakdown (continues on same page, no forced break) ──
-        story.append(Spacer(1, 6*mm))
-        story.append(Paragraph("4. Detailed Item Breakdown", styles["SH"]))
-        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=4))
-        story.append(Paragraph(
-            f"All {len(df)} scheduled maintenance items with computed occurrences and DMC rates. "
-            f"Category-specific adjustment factors applied per item.",
-            styles["Small"]))
-        story.append(Spacer(1, 2*mm))
+        # ── 4. DETAILED BREAKDOWN ──
+        story.append(Paragraph("4. Detailed Item Breakdown", SH)); story.append(hr())
+        story.append(Paragraph(f"{len(df)} scheduled maintenance items. Category-specific adjustment factors applied.", SM))
+        story.append(sp(1))
 
         det_cols = ["Inspection", "Cat.", "Int 1", "Int 2", "MH", "Mat (EUR)", "Occ/yr", "Adj.F", "Total EUR/FH"]
         det_rows = [det_cols]
         for _, r in df.iterrows():
-            cat_short = r["Category"].replace("Corrosion Prevention ", "").replace("Structural Sampling ", "").replace("Fatigue Damage ", "").replace("Time Controlled ", "TC ")
-            det_rows.append([
-                r["Inspection"], cat_short, r["Interval 1"], r["Interval 2"],
+            cat_short = r["Category"].replace("Corrosion Prevention ","").replace("Structural Sampling ","").replace("Fatigue Damage ","").replace("Time Controlled ","TC ")
+            det_rows.append([r["Inspection"], cat_short, r["Interval 1"], r["Interval 2"],
                 f"{r['MH']}", f"{r['Material (EUR)']:,.0f}", f"{r['Occ/yr (Used)']:.3f}",
-                f"{r['Adj. Factor']:.3f}", f"{r['DMC Total (EUR/FH)']:.4f}",
-            ])
-
-        dt = Table(det_rows, colWidths=[24*mm, 14*mm, 14*mm, 14*mm, 10*mm, 16*mm, 14*mm, 12*mm, 22*mm],
-                   repeatRows=1)
+                f"{r['Adj. Factor']:.3f}", f"{r['DMC Total (EUR/FH)']:.4f}"])
+        dt = Table(det_rows, colWidths=[24*mm, 14*mm, 14*mm, 14*mm, 10*mm, 16*mm, 14*mm, 12*mm, 22*mm], repeatRows=1)
         dt.setStyle(TableStyle([
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 6),
-            ("FONTSIZE", (0, 1), (-1, -1), 5.8),
-            ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, SLATE_50]),
-            ("GRID", (0, 0), (-1, -1), 0.25, SLATE_200),
-            ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-            ("ALIGN", (0, 0), (0, -1), "LEFT"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 2),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-            ("LEFTPADDING", (0, 0), (0, -1), 3),
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,0),5.8),("FONTSIZE",(0,1),(-1,-1),5.5),
+            ("BACKGROUND",(0,0),(-1,0),DARK_BLUE),("TEXTCOLOR",(0,0),(-1,0),WHITE),
+            ("ROWBACKGROUNDS",(0,1),(-1,-1),[WHITE,SLATE_50]),("GRID",(0,0),(-1,-1),0.2,SLATE_200),
+            ("ALIGN",(1,0),(-1,-1),"CENTER"),("ALIGN",(0,0),(0,-1),"LEFT"),
+            ("TOPPADDING",(0,0),(-1,-1),1.5),("BOTTOMPADDING",(0,0),(-1,-1),1.5),("LEFTPADDING",(0,0),(0,-1),3),
         ]))
-        story.append(dt)
+        story.append(dt); story.append(sp(3))
 
-        # ── Disclaimer ──
-        story.append(Spacer(1, 8*mm))
-        story.append(HRFlowable(width="100%", thickness=0.5, color=SLATE_200, spaceAfter=4))
-        story.append(Paragraph("Disclaimer & Notes", ParagraphStyle(name="DiscHead",
-            fontName="Helvetica-Bold", fontSize=8, textColor=DARK_BLUE, spaceAfter=3)))
+        # ── DISCLAIMER ──
+        story.append(HRFlowable(width="100%", thickness=0.4, color=SLATE_200, spaceAfter=2))
+        story.append(Paragraph("Disclaimer & Notes", ParagraphStyle("DH", fontName="Helvetica-Bold", fontSize=7.5, textColor=DARK_BLUE, spaceAfter=1)))
+        disc = ParagraphStyle("D", fontName="Helvetica", fontSize=6.5, textColor=SLATE_600, leading=8.5, spaceAfter=1, alignment=TA_JUSTIFY)
+        story.append(Paragraph("1. This report is generated by MaintEdge v1.0 by Deutsche Aircraft GmbH. All cost figures are estimates based on the OEM maintenance programme, assumed utilization profiles, and engineering-derived adjustment factors. Actual costs may vary depending on operator practices, MRO capabilities, and regulatory requirements.", disc))
+        story.append(Paragraph("2. Unscheduled maintenance (40%) and logistics (15%) are industry benchmarks for regional turboprops and should be validated against operator experience.", disc))
+        story.append(Paragraph("3. Environmental and operational factors are category-specific, based on engineering judgement and published industry data. Users should apply professional judgement for contractual or financial planning.", disc))
+        story.append(Paragraph("4. Material costs reflect current OEM pricing, subject to escalation, discount agreements, and exchange rate fluctuations. Labour rates are user-defined.", disc))
+        story.append(Paragraph("5. This document does not constitute a binding cost commitment or warranty by Deutsche Aircraft GmbH.", disc))
+        story.append(sp(2))
+        story.append(Paragraph("MaintEdge by Deutsche Aircraft GmbH  |  Confidential  |  For authorized use only",
+            ParagraphStyle("FN", fontName="Helvetica-Bold", fontSize=6.5, textColor=SLATE_400, alignment=TA_CENTER)))
 
-        disc_style = ParagraphStyle(name="Disc", fontName="Helvetica", fontSize=7,
-            textColor=SLATE_600, leading=9.5, spaceAfter=2, alignment=TA_JUSTIFY)
+        doc.build(story, onFirstPage=tmpl.on_first_page, onLaterPages=tmpl.on_page)
 
-        story.append(Paragraph(
-            "1. This report is generated by MaintEdge v1.0, a Direct Maintenance Cost estimation tool developed by "
-            "Deutsche Aircraft GmbH. All cost figures are estimates based on the OEM maintenance programme, assumed "
-            "utilization profiles, and engineering-derived adjustment factors. Actual maintenance costs may vary "
-            "depending on operator-specific practices, MRO capabilities, regulatory requirements, and supply chain conditions.",
-            disc_style))
-        story.append(Paragraph(
-            "2. Unscheduled maintenance costs are estimated at 40% of scheduled DMC based on industry benchmarks for "
-            "regional turboprop aircraft. Logistics and customs costs are estimated at 15% of scheduled DMC. These "
-            "percentages are indicative and should be validated against operator-specific experience.",
-            disc_style))
-        story.append(Paragraph(
-            "3. Category-specific environmental and operational adjustment factors are based on engineering judgement, "
-            "OEM experience, and published industry data. They have not been statistically validated against a large "
-            "in-service dataset for every environment-category combination. Users should apply professional judgement "
-            "when interpreting results for contractual or financial planning purposes.",
-            disc_style))
-        story.append(Paragraph(
-            "4. Material costs reflect current OEM catalogue pricing and may be subject to escalation, discount "
-            "agreements, exchange rate fluctuations, and availability constraints. Labour rates are user-defined and "
-            "should reflect the actual cost of certified maintenance personnel at the applicable MRO.",
-            disc_style))
-        story.append(Paragraph(
-            "5. This document is provided for informational purposes only and does not constitute a binding cost "
-            "commitment or warranty by Deutsche Aircraft GmbH. Any use of this data for lease agreements, maintenance "
-            "reserve calculations, or financial planning is at the sole discretion and risk of the user.",
-            disc_style))
-        story.append(Spacer(1, 4*mm))
-        story.append(Paragraph(
-            "MaintEdge by Deutsche Aircraft GmbH  |  Confidential  |  For authorized use only",
-            ParagraphStyle(name="FN", fontName="Helvetica-Bold", fontSize=7,
-                textColor=SLATE_400, alignment=TA_CENTER)))
+        # Cleanup temp files
+        import os
+        try: os.unlink(pie_file.name)
+        except: pass
+        try: os.unlink(bar_file.name)
+        except: pass
 
-        doc.build(story,
-            onFirstPage=tmpl.on_first_page,
-            onLaterPages=tmpl.on_page)
         return buffer.getvalue()
 
     try:
@@ -1434,16 +1476,16 @@ elif st.session_state.page == "Report":
 
     params = {
         "Parameter": [
-            "Aircraft Type", "Operator", "Base Country", "FH/Year", "FC/Year",
-            "APU Hrs/Year", "FH/FC Ratio", "Labour Rate", "Environment",
-            "Environment Factor", "Gravel %", "Gravel Factor", "STOL %", "STOL Factor",
+            "Aircraft Type", "MOD Variant", "Operator", "Base Country", "FH/Year", "FC/Year",
+            "APU Hrs/Year", "FH/FC Ratio", "Labour Rate", "Environment Mix",
+            "Blended Env Factor", "Gravel %", "Gravel Factor", "STOL %", "STOL Factor",
             "Factors", "Category-Specific",
         ],
         "Value": [
-            s["aircraft_type"], s["operator"] or "N/A", s["base_country"] or "N/A",
+            s["aircraft_type"], s.get("mod_variant", "N/A"), s["operator"] or "N/A", s["base_country"] or "N/A",
             f"{s['fh_per_year']:,}", f"{s['fc_per_year']:,}", f"{s['apu_hrs_per_year']:,}",
-            f"{s['fh_fc_ratio']:.2f}", f"EUR {s['labour_rate']:.2f}/hr", s["environment"],
-            f"x{ef:.2f}", f"{s['gravel_pct']}%", f"x{gf:.2f}", f"{s['stol_pct']}%", f"x{sf:.2f}",
+            f"{s['fh_fc_ratio']:.2f}", f"EUR {s['labour_rate']:.2f}/hr", active_envs_str,
+            f"x{blended_env:.3f}", f"{s['gravel_pct']}%", f"x{gf:.2f}", f"{s['stol_pct']}%", f"x{sf:.2f}",
             "Env x Gravel x STOL", "Weighted per category (see Calculate page)",
         ],
     }
