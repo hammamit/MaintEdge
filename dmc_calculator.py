@@ -88,9 +88,226 @@ DO328_100_DATA = [
     {"inspection": "NLG Tires (2EA)",         "int1": None, "param1": None,     "int2": 250,   "param2": "FC",  "mh": 4,     "mat": 1746.72,    "category": "Landing Gear"},
     {"inspection": "MLG Tires (4EA)",         "int1": None, "param1": None,     "int2": 150,   "param2": "FC",  "mh": 16,    "mat": 7600.00,    "category": "Landing Gear"},
     {"inspection": "APU Overhaul",            "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",  "mh": 16,    "mat": 123000.00,  "category": "APU"},
-    # Time Controlled Components
-    {"inspection": "Time Controlled Items",   "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",  "mh": 40,    "mat": 80000.00,   "category": "Time Controlled Components"},
+    # Time Controlled Components (MOD 10 baseline; MOD 20/30 factors applied via MOD_FACTORS)
+    {"inspection": "Time Controlled Items",   "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",  "mh": 40,    "mat": 75000.00,   "category": "Time Controlled Components"},
 ]
+
+
+# ----------------------------------------------------------------
+# DO 328-300 (JET) MAINTENANCE DATA (from Excel: DMC calculation d328 jet)
+# Engine: PW306B x2 | No propellers
+# ----------------------------------------------------------------
+D328_300_JET_DATA = [
+    # Airframe Checks
+    {"inspection": "Engine Oil Level Check", "int1": None, "param1": None,     "int2": 24,    "param2": "FH",      "mh": 0.5,   "mat": 37.55,      "category": "Airframe Checks"},
+    {"inspection": "LC",              "int1": 15,   "param1": "Days",   "int2": 60,    "param2": "FH",      "mh": 8,     "mat": 14.08,      "category": "Airframe Checks"},
+    {"inspection": "A1",              "int1": 7.5,  "param1": "Months", "int2": 500,   "param2": "FH",      "mh": 60,    "mat": 91.23,      "category": "Airframe Checks"},
+    {"inspection": "A2",              "int1": 15,   "param1": "Months", "int2": 1000,  "param2": "FH",      "mh": 20,    "mat": 1593.58,    "category": "Airframe Checks"},
+    {"inspection": "A3",              "int1": 15,   "param1": "Months", "int2": 1500,  "param2": "FH",      "mh": 19,    "mat": 6655.95,    "category": "Airframe Checks"},
+    {"inspection": "A4",              "int1": 30,   "param1": "Months", "int2": 2000,  "param2": "FH",      "mh": 14,    "mat": 136.86,     "category": "Airframe Checks"},
+    {"inspection": "A5 (15M)",        "int1": 15,   "param1": "Months", "int2": None,  "param2": None,      "mh": 14,    "mat": 0,          "category": "Airframe Checks"},
+    {"inspection": "A5 (30M/2500FH)", "int1": 30,   "param1": "Months", "int2": 2500,  "param2": "FH",      "mh": 50,    "mat": 566.35,     "category": "Airframe Checks"},
+    {"inspection": "C1",              "int1": 30,   "param1": "Months", "int2": 5000,  "param2": "FH",      "mh": 354,   "mat": 9582.96,    "category": "Airframe Checks"},
+    {"inspection": "C2",              "int1": 60,   "param1": "Months", "int2": 10000, "param2": "FH",      "mh": 309,   "mat": 3969.98,    "category": "Airframe Checks"},
+    {"inspection": "C3",              "int1": 90,   "param1": "Months", "int2": 15000, "param2": "FH",      "mh": 35,    "mat": 182.47,     "category": "Airframe Checks"},
+    {"inspection": "C4",              "int1": 120,  "param1": "Months", "int2": 20000, "param2": "FH",      "mh": 143,   "mat": 17180.50,   "category": "Airframe Checks"},
+    # APU Inspections
+    {"inspection": "APU500",          "int1": None, "param1": None,     "int2": 500,   "param2": "APU Hrs", "mh": 2.5,   "mat": 217.62,     "category": "APU Inspections"},
+    {"inspection": "APU1000",         "int1": None, "param1": None,     "int2": 1000,  "param2": "APU Hrs", "mh": 11,    "mat": 0,          "category": "APU Inspections"},
+    {"inspection": "APU5000",         "int1": None, "param1": None,     "int2": 5000,  "param2": "APU Hrs", "mh": 10,    "mat": 255.00,     "category": "APU Inspections"},
+    # FH-Based Tasks
+    {"inspection": "Compressor Wash", "int1": None, "param1": None,     "int2": 1000,  "param2": "FH",      "mh": 10,    "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH1000",          "int1": None, "param1": None,     "int2": 1000,  "param2": "FH",      "mh": 10.5,  "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH1200",          "int1": None, "param1": None,     "int2": 1200,  "param2": "FH",      "mh": 2,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH2000",          "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",      "mh": 4,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH4000",          "int1": None, "param1": None,     "int2": 4000,  "param2": "FH",      "mh": 11.5,  "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH4000/60M",      "int1": 60,   "param1": "Months", "int2": 4000,  "param2": "FH",      "mh": 5,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH8000",          "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",      "mh": 3,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "Weight & Balance","int1": 48,   "param1": "Months", "int2": None,  "param2": None,      "mh": 23,    "mat": 0,          "category": "FH-Based Tasks"},
+    # Fatigue Damage (FD)
+    {"inspection": "FD-0101",         "int1": None, "param1": None,     "int2": 1000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0202",         "int1": None, "param1": None,     "int2": 2000,  "param2": "FC",      "mh": 6,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0303",         "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0404",         "int1": None, "param1": None,     "int2": 4000,  "param2": "FC",      "mh": 3,     "mat": 47.76,      "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0602",         "int1": None, "param1": None,     "int2": 6000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0606",         "int1": None, "param1": None,     "int2": 6000,  "param2": "FC",      "mh": 8,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0808",         "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",      "mh": 30,    "mat": 278.52,     "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0808A",        "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",      "mh": 8,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1000",         "int1": None, "param1": None,     "int2": 10000, "param2": "FC",      "mh": 2,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1212",         "int1": None, "param1": None,     "int2": 12000, "param2": "FC",      "mh": 9,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1616",         "int1": None, "param1": None,     "int2": 16000, "param2": "FC",      "mh": 12,    "mat": 189.03,     "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1616A",        "int1": None, "param1": None,     "int2": 16000, "param2": "FC",      "mh": 1.5,   "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2000",         "int1": None, "param1": None,     "int2": 20000, "param2": "FC",      "mh": 3,     "mat": 4839.81,    "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2208",         "int1": None, "param1": None,     "int2": 22000, "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2502",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 6,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2503",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2504",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 9,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2506",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 45,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2508",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 105,   "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2512",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 90,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2516",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 225,   "mat": 0,          "category": "Fatigue Damage (FD)"},
+    # Corrosion Prevention (CP)
+    {"inspection": "CP-2",            "int1": 24,   "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-2.5",          "int1": 30,   "param1": "Months", "int2": None,  "param2": None,      "mh": 20,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-4",            "int1": 48,   "param1": "Months", "int2": None,  "param2": None,      "mh": 10,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-5",            "int1": 60,   "param1": "Months", "int2": None,  "param2": None,      "mh": 35,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-10",           "int1": 96,   "param1": "Months", "int2": None,  "param2": None,      "mh": 105,   "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-10/5",         "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    # Structural Sampling (SSI)
+    {"inspection": "SSI-2",           "int1": 24,   "param1": "Months", "int2": None,  "param2": None,      "mh": 15,    "mat": 0,          "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-2.5",         "int1": 30,   "param1": "Months", "int2": None,  "param2": None,      "mh": 10,    "mat": 314.87,     "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-5",           "int1": 60,   "param1": "Months", "int2": None,  "param2": None,      "mh": 80,    "mat": 1096.10,    "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-10",          "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 220,   "mat": 2991.68,    "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-10/5",        "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Structural Sampling (SSI)"},
+    # Heavy Components (quantities applied per notes in Excel)
+    {"inspection": "Engine Change (2EA)",   "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",      "mh": 360,   "mat": 3304050.00, "category": "Engines"},
+    {"inspection": "APU Overhaul",          "int1": None, "param1": None,     "int2": 6000,  "param2": "APU Hrs", "mh": 16,    "mat": 123000.00,  "category": "APU"},
+    {"inspection": "Landing Gear Overhaul", "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",      "mh": 85,    "mat": 850000.00,  "category": "Landing Gear"},
+    {"inspection": "Brakes (4EA)",          "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",      "mh": 8,     "mat": 80000.00,   "category": "Landing Gear"},
+    {"inspection": "NLG Tires (2EA)",       "int1": None, "param1": None,     "int2": 250,   "param2": "FC",      "mh": 4,     "mat": 1746.72,    "category": "Landing Gear"},
+    {"inspection": "MLG Tires (4EA)",       "int1": None, "param1": None,     "int2": 150,   "param2": "FC",      "mh": 16,    "mat": 7600.00,    "category": "Landing Gear"},
+    # Time Controlled Components
+    {"inspection": "Time Controlled Items", "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",      "mh": 40,    "mat": 75000.00,   "category": "Time Controlled Components"},
+]
+
+
+# ----------------------------------------------------------------
+# DO 328eco MAINTENANCE DATA
+# Engine: PW127XT-S x2 via PWC FMP (pay-per-hour) -- NO APU
+# Propeller: 8,000 FH / 84 months | LG overhaul: $530,000
+# Source: DMC calculation D328eco.xlsx + PWC FMP PDF (Sept 2023)
+# ----------------------------------------------------------------
+D328_ECO_DATA = [
+    # Airframe Checks
+    {"inspection": "Engine Oil Level Check", "int1": None, "param1": None,     "int2": 24,    "param2": "FH",      "mh": 0.5,   "mat": 37.55,      "category": "Airframe Checks"},
+    {"inspection": "LC",              "int1": 15,   "param1": "Days",   "int2": 60,    "param2": "FH",      "mh": 8,     "mat": 14.08,      "category": "Airframe Checks"},
+    {"inspection": "A1",              "int1": 7.5,  "param1": "Months", "int2": 500,   "param2": "FH",      "mh": 80,    "mat": 91.23,      "category": "Airframe Checks"},
+    {"inspection": "A2",              "int1": 15,   "param1": "Months", "int2": 1000,  "param2": "FH",      "mh": 50,    "mat": 10847.72,   "category": "Airframe Checks"},
+    {"inspection": "A3",              "int1": 15,   "param1": "Months", "int2": 1500,  "param2": "FH",      "mh": 20,    "mat": 11383.37,   "category": "Airframe Checks"},
+    {"inspection": "A4",              "int1": 30,   "param1": "Months", "int2": 2000,  "param2": "FH",      "mh": 18,    "mat": 136.86,     "category": "Airframe Checks"},
+    {"inspection": "A5",              "int1": 30,   "param1": "Months", "int2": 2500,  "param2": "FH",      "mh": 75,    "mat": 566.35,     "category": "Airframe Checks"},
+    {"inspection": "C1",              "int1": 30,   "param1": "Months", "int2": 5000,  "param2": "FH",      "mh": 360,   "mat": 8682.17,    "category": "Airframe Checks"},
+    {"inspection": "C2",              "int1": 60,   "param1": "Months", "int2": 10000, "param2": "FH",      "mh": 270,   "mat": 1824.69,    "category": "Airframe Checks"},
+    {"inspection": "C3",              "int1": 90,   "param1": "Months", "int2": 15000, "param2": "FH",      "mh": 30,    "mat": 182.47,     "category": "Airframe Checks"},
+    {"inspection": "C4",              "int1": 120,  "param1": "Months", "int2": 20000, "param2": "FH",      "mh": 140,   "mat": 2982.48,    "category": "Airframe Checks"},
+    # FH-Based Tasks (no APU tasks -- D328eco has no APU)
+    {"inspection": "FH1000",          "int1": None, "param1": None,     "int2": 1000,  "param2": "FH",      "mh": 10.5,  "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH1200",          "int1": None, "param1": None,     "int2": 1200,  "param2": "FH",      "mh": 2,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH2000",          "int1": None, "param1": None,     "int2": 2000,  "param2": "FH",      "mh": 4,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH4000",          "int1": None, "param1": None,     "int2": 4000,  "param2": "FH",      "mh": 11.5,  "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH4000/60M",      "int1": 60,   "param1": "Months", "int2": 4000,  "param2": "FH",      "mh": 5,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "FH8000",          "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",      "mh": 3,     "mat": 0,          "category": "FH-Based Tasks"},
+    {"inspection": "Weight & Balance","int1": 48,   "param1": "Months", "int2": None,  "param2": None,      "mh": 23,    "mat": 0,          "category": "FH-Based Tasks"},
+    # Fatigue Damage (FD)
+    {"inspection": "FD-0101",         "int1": None, "param1": None,     "int2": 1000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0202",         "int1": None, "param1": None,     "int2": 2000,  "param2": "FC",      "mh": 6,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0303",         "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0404",         "int1": None, "param1": None,     "int2": 4000,  "param2": "FC",      "mh": 4,     "mat": 47.76,      "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0602",         "int1": None, "param1": None,     "int2": 6000,  "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0606",         "int1": None, "param1": None,     "int2": 6000,  "param2": "FC",      "mh": 8,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0808",         "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",      "mh": 30,    "mat": 278.52,     "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-0808A",        "int1": None, "param1": None,     "int2": 8000,  "param2": "FC",      "mh": 18,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1000",         "int1": None, "param1": None,     "int2": 10000, "param2": "FC",      "mh": 8,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1212",         "int1": None, "param1": None,     "int2": 12000, "param2": "FC",      "mh": 9,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1616",         "int1": None, "param1": None,     "int2": 16000, "param2": "FC",      "mh": 12,    "mat": 189.03,     "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-1616A",        "int1": None, "param1": None,     "int2": 16000, "param2": "FC",      "mh": 4,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2000",         "int1": None, "param1": None,     "int2": 20000, "param2": "FC",      "mh": 3,     "mat": 4839.81,    "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2208",         "int1": None, "param1": None,     "int2": 22000, "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2502",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 6,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2503",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 3,     "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2504",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 14,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2506",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 45,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2508",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 105,   "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2508A",        "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 12,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2510",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 24,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2512",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 90,    "mat": 0,          "category": "Fatigue Damage (FD)"},
+    {"inspection": "FD-2516",         "int1": None, "param1": None,     "int2": 25000, "param2": "FC",      "mh": 225,   "mat": 0,          "category": "Fatigue Damage (FD)"},
+    # Corrosion Prevention (CP)
+    {"inspection": "CP-2",            "int1": 24,   "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-2.5",          "int1": 30,   "param1": "Months", "int2": None,  "param2": None,      "mh": 20,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-4",            "int1": 48,   "param1": "Months", "int2": None,  "param2": None,      "mh": 10,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-5",            "int1": 60,   "param1": "Months", "int2": None,  "param2": None,      "mh": 35,    "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-10",           "int1": 96,   "param1": "Months", "int2": None,  "param2": None,      "mh": 105,   "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    {"inspection": "CP-10/5",         "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Corrosion Prevention (CP)"},
+    # Structural Sampling (SSI)
+    {"inspection": "SSI-2",           "int1": 24,   "param1": "Months", "int2": None,  "param2": None,      "mh": 15,    "mat": 0,          "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-2.5",         "int1": 30,   "param1": "Months", "int2": None,  "param2": None,      "mh": 10,    "mat": 314.87,     "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-5",           "int1": 60,   "param1": "Months", "int2": None,  "param2": None,      "mh": 80,    "mat": 1096.10,    "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-10",          "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 220,   "mat": 2991.68,    "category": "Structural Sampling (SSI)"},
+    {"inspection": "SSI-10/5",        "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Structural Sampling (SSI)"},
+    # Time Controlled Components
+    {"inspection": "Time Controlled Items",  "int1": None, "param1": None,    "int2": 2000, "param2": "FH", "mh": 40, "mat": 63000.00,   "category": "Time Controlled Components"},
+    # Heavy Components (no APU, no engine overhaul -- engines via PWC FMP)
+    {"inspection": "Propeller Change (2EA)", "int1": 84,  "param1": "Months", "int2": 8000, "param2": "FH", "mh": 80,  "mat": 358604.00,  "category": "Propellers"},
+    {"inspection": "Landing Gear Overhaul", "int1": 144,  "param1": "Months", "int2": 22000,"param2": "FC", "mh": 85,  "mat": 530000.00,  "category": "Landing Gear"},
+    {"inspection": "Brakes (4EA)",          "int1": None, "param1": None,     "int2": 3000, "param2": "FC", "mh": 8,   "mat": 80000.00,   "category": "Landing Gear"},
+    {"inspection": "NLG Tires (2EA)",       "int1": None, "param1": None,     "int2": 250,  "param2": "FC", "mh": 4,   "mat": 1746.72,    "category": "Landing Gear"},
+    {"inspection": "MLG Tires (4EA)",       "int1": None, "param1": None,     "int2": 150,  "param2": "FC", "mh": 16,  "mat": 7600.00,    "category": "Landing Gear"},
+]
+
+# ----------------------------------------------------------------
+# PWC FMP ENGINE DMC -- PW127XT-S (D328eco)
+# Source: "2023 09 DMC D328eco PW127XT-S (002) 2.pdf" (Pratt & Whitney Canada)
+# IMPORTANT: PWC FMP rates are quoted PER ENGINE (industry standard).
+# The D328eco has 2 x PW127XT-S engines, so the per-aircraft rate = 2 x table value.
+# Services covered per engine: overhaul incl. shop labour & parts, HSI, LLP
+#   replacement, engine BUR, SB cat 1-6, DPHM/ECTM, FAST connectivity
+#   (incl. propeller balance monitoring, aircraft data services, engine data),
+#   fuel nozzle refurbishment. NOTE: propeller overhaul is a separate line item.
+# Escalation: 3.5% p.a. compound from Sept 2023 to March 2026 = 2.5 years
+# USD to EUR conversion: 0.92 EUR/USD
+# ----------------------------------------------------------------
+_PWC_FMP_TABLE = [
+    # (avg flight duration in minutes, USD/FH per SINGLE engine in $2023)
+    (23,  243),
+    (34,  193),
+    (44,  164),
+    (55,  146),
+    (65,  135),
+    (86,  135),
+]
+_PWC_ESCALATION_FACTOR = (1.035 ** 2.5)   # 3.5%/yr x 2.5 yrs = ~1.0899
+_PWC_USD_TO_EUR = 0.92                     # USD to EUR
+_PWC_ENGINE_COUNT = 2                      # D328eco has 2 engines
+
+
+def get_pwc_engine_rate_eur(fh_per_year, fc_per_year):
+    """
+    Return the escalated EUR/FH engine DMC for PW127XT-S x2 (both engines) via PWC FMP.
+    PWC rates are per single engine; multiplied by 2 for both engines per aircraft.
+    Interpolates from the PWC pay-per-hour table based on average flight duration.
+    Prices from PWC PDF (Sept 2023) escalated to March 2026 at 3.5%/yr, USD->EUR at 0.92.
+    """
+    if fc_per_year <= 0:
+        return 0.0
+    avg_min = (fh_per_year / fc_per_year) * 60.0  # average flight duration (minutes)
+
+    table = _PWC_FMP_TABLE
+    if avg_min <= table[0][0]:
+        rate_usd_2023 = table[0][1]
+    elif avg_min >= table[-1][0]:
+        rate_usd_2023 = table[-1][1]
+    else:
+        rate_usd_2023 = table[0][1]
+        for i in range(len(table) - 1):
+            x0, x1 = table[i][0], table[i + 1][0]
+            y0, y1 = table[i][1], table[i + 1][1]
+            if x0 <= avg_min <= x1:
+                frac = (avg_min - x0) / (x1 - x0)
+                rate_usd_2023 = y0 + frac * (y1 - y0)
+                break
+
+    # Per engine rate escalated and converted, then x2 for both engines
+    return rate_usd_2023 * _PWC_USD_TO_EUR * _PWC_ESCALATION_FACTOR * _PWC_ENGINE_COUNT
+
+
+def get_aircraft_data(aircraft_type):
+    """Return the maintenance data list for the selected aircraft type."""
+    if "328-300" in aircraft_type or "Jet" in aircraft_type:
+        return D328_300_JET_DATA
+    if "eco" in aircraft_type.lower():
+        return D328_ECO_DATA
+    return DO328_100_DATA
 
 
 # ----------------------------------------------------------------
@@ -112,13 +329,13 @@ MOD_FACTORS = {
         "Airframe Checks": 1.00, "APU Inspections": 1.00, "FH-Based Tasks": 1.00,
         "Fatigue Damage (FD)": 1.00, "Corrosion Prevention (CP)": 1.00,
         "Structural Sampling (SSI)": 1.00, "Engines": 1.04, "Propellers": 1.02,
-        "Landing Gear": 1.00, "APU": 1.00, "Time Controlled Components": 1.00,
+        "Landing Gear": 1.00, "APU": 1.00, "Time Controlled Components": 1.05,
     },
     "MOD 30": {
         "Airframe Checks": 1.03, "APU Inspections": 1.00, "FH-Based Tasks": 1.02,
         "Fatigue Damage (FD)": 1.00, "Corrosion Prevention (CP)": 1.00,
         "Structural Sampling (SSI)": 1.00, "Engines": 1.04, "Propellers": 1.02,
-        "Landing Gear": 1.01, "APU": 1.00, "Time Controlled Components": 1.00,
+        "Landing Gear": 1.01, "APU": 1.00, "Time Controlled Components": 1.10,
     },
 }
 # Each environment/operational factor has different severity per category.
@@ -732,8 +949,12 @@ elif st.session_state.page == "Setup & Calculate":
         st.markdown(f'<div class="s-card"><div class="s-card-t">{svg_icon("chart", 18)} Utilization Profile</div></div>', unsafe_allow_html=True)
         s["fh_per_year"] = st.number_input("Flight Hours / Year (FH/yr)", min_value=100, max_value=5000, value=s["fh_per_year"], step=50)
         s["fc_per_year"] = st.number_input("Flight Cycles / Year (FC/yr)", min_value=100, max_value=6000, value=s["fc_per_year"], step=50)
-        s["apu_hrs_per_year"] = st.number_input("APU Hours / Year", min_value=100, max_value=5000, value=s["apu_hrs_per_year"], step=50,
-            help="Annual APU operating hours for APU inspection intervals.")
+        if "eco" not in s["aircraft_type"].lower():
+            s["apu_hrs_per_year"] = st.number_input("APU Hours / Year", min_value=100, max_value=5000, value=s["apu_hrs_per_year"], step=50,
+                help="Annual APU operating hours for APU inspection intervals.")
+        else:
+            s["apu_hrs_per_year"] = 0
+            st.markdown('<div class="info-box info-slate">No APU fitted -- D328eco does not have an APU.</div>', unsafe_allow_html=True)
 
         if s["fc_per_year"] > 0:
             ratio = round(s["fh_per_year"] / s["fc_per_year"], 2)
@@ -813,7 +1034,7 @@ elif st.session_state.page == "Setup & Calculate":
     st.markdown(f"""
     <div class="metrics">
         <div class="metric"><div class="metric-label">Aircraft</div><div class="metric-val" style="font-size:0.95rem;">{s["aircraft_type"]}</div>{mod_display}<div class="metric-unit">{s["operator"] or "N/A"} | {s["base_country"] or "N/A"}</div></div>
-        <div class="metric"><div class="metric-label">Utilization</div><div class="metric-val" style="font-size:1rem;">{s["fh_per_year"]:,} FH / {s["fc_per_year"]:,} FC</div><div class="metric-unit">APU: {s["apu_hrs_per_year"]:,} hrs | Ratio: {ratio}</div></div>
+        <div class="metric"><div class="metric-label">Utilization</div><div class="metric-val" style="font-size:1rem;">{s["fh_per_year"]:,} FH / {s["fc_per_year"]:,} FC</div><div class="metric-unit">{"No APU" if "eco" in s["aircraft_type"].lower() else f"APU: {s['apu_hrs_per_year']:,} hrs"} | Ratio: {ratio}</div></div>
         <div class="metric"><div class="metric-label">Blended Env</div><div class="metric-val">x{blended_env:.3f}</div><div class="metric-unit">{active_envs_short}</div></div>
     </div>
     """, unsafe_allow_html=True)
@@ -834,8 +1055,31 @@ elif st.session_state.page == "Setup & Calculate":
 
     if st.session_state.get("calculated", False):
         with st.spinner("Computing DMC for all maintenance items..."):
-            results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
+            results = calculate_dmc(get_aircraft_data(s["aircraft_type"]), s["fh_per_year"], s["fc_per_year"],
                 s["apu_hrs_per_year"], s["labour_rate"], s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+
+            # D328eco: inject PWC FMP engine DMC as a fixed EUR/FH item
+            # The FMP rate already covers all engine maintenance; no environmental adjustment applied.
+            if "eco" in s["aircraft_type"].lower():
+                avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
+                pwc_rate = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+                results.append({
+                    "Category":               "Engines (PWC FMP)",
+                    "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
+                    "Interval 1":             "Pay-per-hour",
+                    "Interval 2":             "Pay-per-hour",
+                    "MH":                     0,
+                    "Material (EUR)":         0,
+                    "Occ/yr (Cal)":           0,
+                    "Occ/yr (Usage)":         0,
+                    "Occ/yr (Used)":          0,
+                    "Driver":                 "FMP Rate",
+                    "Adj. Factor":            1.0,
+                    "DMC Labour (EUR/FH)":    0.0,
+                    "DMC Material (EUR/FH)":  round(pwc_rate, 4),
+                    "DMC Total (EUR/FH)":     round(pwc_rate, 4),
+                })
+
             df = pd.DataFrame(results)
             st.session_state.calc_results = results
 
@@ -1007,8 +1251,29 @@ elif st.session_state.page == "Report":
     blended_env = sum((ENVIRONMENT_FACTORS[e] * p / 100) for e, p in env_mix.items() if p > 0) if sum(env_mix.values()) == 100 else 1.0
     active_envs_str = ", ".join([f"{e} {p}%" for e, p in env_mix.items() if p > 0])
 
-    results = calculate_dmc(DO328_100_DATA, s["fh_per_year"], s["fc_per_year"],
+    results = calculate_dmc(get_aircraft_data(s["aircraft_type"]), s["fh_per_year"], s["fc_per_year"],
         s["apu_hrs_per_year"], s["labour_rate"], env_mix, s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+
+    if "eco" in s["aircraft_type"].lower():
+        avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
+        pwc_rate = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+        results.append({
+            "Category":               "Engines (PWC FMP)",
+            "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
+            "Interval 1":             "Pay-per-hour",
+            "Interval 2":             "Pay-per-hour",
+            "MH":                     0,
+            "Material (EUR)":         0,
+            "Occ/yr (Cal)":           0,
+            "Occ/yr (Usage)":         0,
+            "Occ/yr (Used)":          0,
+            "Driver":                 "FMP Rate",
+            "Adj. Factor":            1.0,
+            "DMC Labour (EUR/FH)":    0.0,
+            "DMC Material (EUR/FH)":  round(pwc_rate, 4),
+            "DMC Total (EUR/FH)":     round(pwc_rate, 4),
+        })
+
     df = pd.DataFrame(results)
 
     total_labour = df["DMC Labour (EUR/FH)"].sum()
@@ -1193,70 +1458,104 @@ elif st.session_state.page == "Report":
     def generate_pdf():
         import io
         import tempfile
+        import os
         from datetime import datetime
         from reportlab.lib.pagesizes import A4
         from reportlab.lib import colors
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.styles import ParagraphStyle
         from reportlab.lib.units import mm
         from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, Image
+        from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Table,
+            TableStyle, HRFlowable, Image, KeepTogether)
 
         buffer = io.BytesIO()
-
-        NAVY = colors.HexColor("#0A1628"); DARK_BLUE = colors.HexColor("#1E293B")
-        BRAND_BLUE = colors.HexColor("#2563EB"); LIGHT_BLUE = colors.HexColor("#EFF6FF")
-        SLATE_600 = colors.HexColor("#475569"); SLATE_400 = colors.HexColor("#94A3B8")
-        SLATE_200 = colors.HexColor("#E2E8F0"); SLATE_50 = colors.HexColor("#F8FAFC")
-        WHITE = colors.white
+        NAVY       = colors.HexColor("#0A1628")
+        DARK_BLUE  = colors.HexColor("#1E293B")
+        BRAND_BLUE = colors.HexColor("#2563EB")
+        LIGHT_BLUE = colors.HexColor("#EFF6FF")
+        SLATE_600  = colors.HexColor("#475569")
+        SLATE_400  = colors.HexColor("#94A3B8")
+        SLATE_200  = colors.HexColor("#E2E8F0")
+        SLATE_50   = colors.HexColor("#F8FAFC")
+        WHITE      = colors.white
+        GREEN      = colors.HexColor("#22C55E")
+        CYAN_400   = colors.HexColor("#60A5FA")
         page_w, page_h = A4
 
-        # Generate chart images for PDF
+        # ── Chart data ───────────────────────────────────────────────
         cat_sum_pdf = df.groupby("Category").agg({
             "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
         }).reset_index().sort_values("DMC Total (EUR/FH)", ascending=False)
         cat_sum_pdf["pct"] = (cat_sum_pdf["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+        CHART_COLORS = ["#2563EB","#0891B2","#059669","#D97706","#7C3AED",
+                        "#DC2626","#475569","#EC4899","#F59E0B","#10B981","#6366F1"]
 
-        # Pie chart
+        # Pie chart -- percent INSIDE slices + right-side legend (no outside labels = no overflow)
         fig_pie = go.Figure(data=[go.Pie(
-            labels=cat_sum_pdf["Category"], values=cat_sum_pdf["DMC Total (EUR/FH)"].round(2),
-            hole=0.5, marker=dict(colors=["#2563EB","#0891B2","#059669","#D97706","#7C3AED","#DC2626","#475569","#EC4899","#F59E0B","#10B981","#6366F1"]),
-            textinfo="label+percent", textfont_size=8, textposition="outside",
+            labels=cat_sum_pdf["Category"],
+            values=cat_sum_pdf["DMC Total (EUR/FH)"].round(2),
+            hole=0.45,
+            marker=dict(colors=CHART_COLORS),
+            textinfo="percent",
+            textfont=dict(size=9, color="white"),
+            insidetextorientation="radial",
         )])
-        fig_pie.update_layout(title=dict(text="DMC Distribution", font=dict(size=11)),
-            height=300, width=400, margin=dict(t=40,b=10,l=10,r=10), showlegend=False,
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        fig_pie.update_layout(
+            title=dict(text="DMC Distribution by Category",
+                       font=dict(size=13, family="Arial", color="#1E293B")),
+            height=420, width=680,
+            margin=dict(t=55, b=20, l=20, r=220),
+            showlegend=True,
+            legend=dict(
+                orientation="v", x=0.97, y=0.5,
+                xanchor="left", yanchor="middle",
+                font=dict(size=9, family="Arial"),
+                itemsizing="constant",
+            ),
+            paper_bgcolor="white", plot_bgcolor="white",
+        )
         pie_bytes = fig_pie.to_image(format="png", scale=2)
         pie_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
         pie_file.write(pie_bytes); pie_file.close()
 
-        # Bar chart
+        # Bar chart -- more bottom margin so rotated labels are fully visible
         fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(name="Labour", x=cat_sum_pdf["Category"], y=cat_sum_pdf["DMC Labour (EUR/FH)"].round(2), marker_color="#2563EB"))
-        fig_bar.add_trace(go.Bar(name="Material", x=cat_sum_pdf["Category"], y=cat_sum_pdf["DMC Material (EUR/FH)"].round(2), marker_color="#22D3EE"))
-        fig_bar.update_layout(title=dict(text="Labour vs Material", font=dict(size=11)),
-            barmode="stack", height=300, width=400, margin=dict(t=40,b=80,l=40,r=10),
-            xaxis=dict(tickangle=-40, tickfont=dict(size=7)),
-            yaxis=dict(title=dict(text="EUR/FH", font=dict(size=9))),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=8)),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        fig_bar.add_trace(go.Bar(
+            name="Labour", x=cat_sum_pdf["Category"],
+            y=cat_sum_pdf["DMC Labour (EUR/FH)"].round(2), marker_color="#2563EB"))
+        fig_bar.add_trace(go.Bar(
+            name="Material", x=cat_sum_pdf["Category"],
+            y=cat_sum_pdf["DMC Material (EUR/FH)"].round(2), marker_color="#22D3EE"))
+        fig_bar.update_layout(
+            title=dict(text="Labour vs Material by Category (EUR/FH)",
+                       font=dict(size=13, family="Arial", color="#1E293B")),
+            barmode="stack", height=420, width=680,
+            margin=dict(t=55, b=160, l=70, r=20),
+            xaxis=dict(tickangle=-40, tickfont=dict(size=8, family="Arial"), automargin=True),
+            yaxis=dict(title=dict(text="EUR / FH", font=dict(size=10, family="Arial")),
+                       tickfont=dict(size=8, family="Arial"), gridcolor="#E2E8F0"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
+                        font=dict(size=9, family="Arial")),
+            paper_bgcolor="white", plot_bgcolor="rgba(248,250,252,1)",
+        )
         bar_bytes = fig_bar.to_image(format="png", scale=2)
         bar_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
         bar_file.write(bar_bytes); bar_file.close()
 
-        # Page template
+        # ── Page template ────────────────────────────────────────────
         class PDFTemplate:
             def on_page(self, canvas, doc):
                 canvas.saveState()
                 canvas.setStrokeColor(BRAND_BLUE); canvas.setLineWidth(1.5)
                 canvas.line(15*mm, page_h-12*mm, page_w-15*mm, page_h-12*mm)
-                canvas.setFont("Helvetica-Bold",7); canvas.setFillColor(SLATE_400)
+                canvas.setFont("Helvetica-Bold", 7); canvas.setFillColor(SLATE_400)
                 canvas.drawString(15*mm, page_h-10*mm, "MAINTEDGE  |  DIRECT MAINTENANCE COST REPORT")
                 canvas.drawRightString(page_w-15*mm, page_h-10*mm, "DEUTSCHE AIRCRAFT GMBH")
                 canvas.setStrokeColor(SLATE_200); canvas.setLineWidth(0.5)
-                canvas.line(15*mm,14*mm,page_w-15*mm,14*mm)
-                canvas.setFont("Helvetica",6.5); canvas.setFillColor(SLATE_400)
-                canvas.drawString(15*mm,10*mm,"CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
-                canvas.drawRightString(page_w-15*mm,10*mm,f"Page {doc.page}")
+                canvas.line(15*mm, 14*mm, page_w-15*mm, 14*mm)
+                canvas.setFont("Helvetica", 6.5); canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm, 10*mm, "CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
+                canvas.drawRightString(page_w-15*mm, 10*mm, f"Page {doc.page}")
                 canvas.restoreState()
 
             def on_first_page(self, canvas, doc):
@@ -1264,61 +1563,74 @@ elif st.session_state.page == "Report":
                 canvas.setFillColor(NAVY); canvas.rect(0, page_h-52*mm, page_w, 52*mm, fill=1, stroke=0)
                 canvas.setStrokeColor(BRAND_BLUE); canvas.setLineWidth(2.5)
                 canvas.line(0, page_h-52*mm, page_w, page_h-52*mm)
-                canvas.setFont("Helvetica",7); canvas.setFillColor(SLATE_400)
+                canvas.setFont("Helvetica", 7); canvas.setFillColor(SLATE_400)
                 canvas.drawString(20*mm, page_h-14*mm, "DEUTSCHE AIRCRAFT GMBH")
-                canvas.setFont("Helvetica-Bold",24); canvas.setFillColor(WHITE)
+                canvas.setFont("Helvetica-Bold", 24); canvas.setFillColor(WHITE)
                 canvas.drawString(20*mm, page_h-26*mm, "MaintEdge")
-                canvas.setFont("Helvetica",12); canvas.setFillColor(colors.HexColor("#CBD5E1"))
+                canvas.setFont("Helvetica", 12); canvas.setFillColor(colors.HexColor("#CBD5E1"))
                 canvas.drawString(20*mm, page_h-34*mm, "Direct Maintenance Cost Report")
-                mod_str = f"  |  {s.get('mod_variant','')}" if s.get('mod_variant','N/A') != 'N/A' else ""
-                canvas.setFont("Helvetica",8); canvas.setFillColor(SLATE_400)
-                canvas.drawString(20*mm, page_h-43*mm, f"{s['aircraft_type']}{mod_str}  |  {s['operator'] or 'N/A'}  |  {s['base_country'] or 'N/A'}  |  {datetime.now().strftime('%d %B %Y')}")
-                # DMC box
+                mod_str_hdr = f"  |  {s.get('mod_variant','')}" if s.get('mod_variant','N/A') != 'N/A' else ""
+                canvas.setFont("Helvetica", 8); canvas.setFillColor(SLATE_400)
+                canvas.drawString(20*mm, page_h-43*mm, f"{s['aircraft_type']}{mod_str_hdr}  |  {s['operator'] or 'N/A'}  |  {s['base_country'] or 'N/A'}  |  {datetime.now().strftime('%d %B %Y')}")
+                # DMC box top-right (green border added)
                 bx = page_w-68*mm; by = page_h-46*mm
-                canvas.setFillColor(colors.HexColor("#162240")); canvas.roundRect(bx,by,50*mm,26*mm,3*mm,fill=1,stroke=0)
-                canvas.setFont("Helvetica",6.5); canvas.setFillColor(colors.HexColor("#60A5FA"))
+                canvas.setFillColor(colors.HexColor("#162240"))
+                canvas.roundRect(bx, by, 50*mm, 26*mm, 3*mm, fill=1, stroke=0)
+                canvas.setStrokeColor(GREEN); canvas.setLineWidth(1.2)
+                canvas.roundRect(bx, by, 50*mm, 26*mm, 3*mm, fill=0, stroke=1)
+                canvas.setFont("Helvetica", 6.5); canvas.setFillColor(CYAN_400)
                 canvas.drawCentredString(bx+25*mm, by+19*mm, "TOTAL DMC")
-                canvas.setFont("Helvetica-Bold",15); canvas.setFillColor(WHITE)
+                canvas.setFont("Helvetica-Bold", 15); canvas.setFillColor(WHITE)
                 canvas.drawCentredString(bx+25*mm, by+10*mm, f"EUR {total_dmc:,.2f}")
-                canvas.setFont("Helvetica",7); canvas.setFillColor(SLATE_400)
+                canvas.setFont("Helvetica", 7); canvas.setFillColor(SLATE_400)
                 canvas.drawCentredString(bx+25*mm, by+4*mm, "per Flight Hour")
-                # Footer
                 canvas.setStrokeColor(SLATE_200); canvas.setLineWidth(0.5)
-                canvas.line(15*mm,14*mm,page_w-15*mm,14*mm)
-                canvas.setFont("Helvetica",6.5); canvas.setFillColor(SLATE_400)
-                canvas.drawString(15*mm,10*mm,"CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
-                canvas.drawRightString(page_w-15*mm,10*mm,f"Page {doc.page}")
+                canvas.line(15*mm, 14*mm, page_w-15*mm, 14*mm)
+                canvas.setFont("Helvetica", 6.5); canvas.setFillColor(SLATE_400)
+                canvas.drawString(15*mm, 10*mm, "CONFIDENTIAL  --  Deutsche Aircraft GmbH  --  For authorized use only")
+                canvas.drawRightString(page_w-15*mm, 10*mm, f"Page {doc.page}")
                 canvas.restoreState()
 
         tmpl = PDFTemplate()
         doc = SimpleDocTemplate(buffer, pagesize=A4,
             topMargin=56*mm, bottomMargin=18*mm, leftMargin=15*mm, rightMargin=15*mm)
 
-        # Tight styles
-        SH = ParagraphStyle("SH", fontName="Helvetica-Bold", fontSize=11, textColor=NAVY, spaceBefore=6, spaceAfter=2, leading=14)
-        B9 = ParagraphStyle("B9", fontName="Helvetica", fontSize=8.5, textColor=SLATE_600, spaceAfter=2, leading=12, alignment=TA_JUSTIFY)
-        SM = ParagraphStyle("SM", fontName="Helvetica", fontSize=7, textColor=SLATE_400, spaceAfter=1, leading=9)
-        def hr(): return HRFlowable(width="100%", thickness=0.4, color=SLATE_200, spaceAfter=3)
-        def sp(n): return Spacer(1, n*mm)
+        # ── Styles ───────────────────────────────────────────────────
+        # keepWithNext=1 ensures section heading always stays on same page as its content
+        SH  = ParagraphStyle("SH",  fontName="Helvetica-Bold", fontSize=11, textColor=NAVY,
+                             spaceBefore=8, spaceAfter=2, leading=14, keepWithNext=1)
+        B9  = ParagraphStyle("B9",  fontName="Helvetica",      fontSize=8.5, textColor=SLATE_600,
+                             spaceAfter=2, leading=12, alignment=TA_JUSTIFY)
+        SM  = ParagraphStyle("SM",  fontName="Helvetica",      fontSize=7,   textColor=SLATE_400,
+                             spaceAfter=1, leading=9)
+        # Cell styles for detail table -- Paragraph wrapping prevents overflow
+        CS  = ParagraphStyle("CS",  fontName="Helvetica",      fontSize=5.5, textColor=SLATE_600,
+                             leading=7,   wordWrap="LTR")
+        CSH = ParagraphStyle("CSH", fontName="Helvetica-Bold", fontSize=5.8, textColor=WHITE,
+                             leading=7.5, alignment=TA_CENTER)
+        def hr():   return HRFlowable(width="100%", thickness=0.4, color=SLATE_200, spaceAfter=3)
+        def sp(n):  return Spacer(1, n*mm)
 
         story = []
-        labour_pct_val = (total_labour / total_dmc * 100) if total_dmc > 0 else 0
+        labour_pct_val   = (total_labour / total_dmc * 100) if total_dmc > 0 else 0
         material_pct_val = 100 - labour_pct_val
-        unsched = total_dmc * 0.40
-        logistics = total_dmc * 0.15
+        unsched      = total_dmc * 0.40
+        logistics    = total_dmc * 0.15
         total_all_in = total_dmc + unsched + logistics
         mod_str = s.get('mod_variant', 'N/A')
-        active_envs_display = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in s.get("env_mix",{}).items() if p > 0])
+        active_envs_display = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in s.get("env_mix", {}).items() if p > 0])
 
-        # ── EXECUTIVE SUMMARY ──
-        story.append(Paragraph("Executive Summary", SH)); story.append(hr())
-        story.append(Paragraph(
-            f"This report presents the Direct Maintenance Cost (DMC) analysis for the <b>{s['aircraft_type']}"
-            f"{' (' + mod_str + ')' if mod_str != 'N/A' else ''}</b> operated by "
-            f"<b>{s['operator'] or 'N/A'}</b> based in <b>{s['base_country'] or 'N/A'}</b>. "
-            f"The analysis is based on an annual utilization of <b>{s['fh_per_year']:,} flight hours</b> and "
-            f"<b>{s['fc_per_year']:,} flight cycles</b>, with a labour rate of <b>EUR {s['labour_rate']:.2f}/hr</b>.",
-            B9))
+        # ── EXECUTIVE SUMMARY (KeepTogether: heading + hr + first paragraph) ──
+        story.append(KeepTogether([
+            Paragraph("Executive Summary", SH), hr(),
+            Paragraph(
+                f"This report presents the Direct Maintenance Cost (DMC) analysis for the <b>{s['aircraft_type']}"
+                f"{' (' + mod_str + ')' if mod_str != 'N/A' else ''}</b> operated by "
+                f"<b>{s['operator'] or 'N/A'}</b> based in <b>{s['base_country'] or 'N/A'}</b>. "
+                f"The analysis is based on an annual utilization of <b>{s['fh_per_year']:,} flight hours</b> and "
+                f"<b>{s['fc_per_year']:,} flight cycles</b>, with a labour rate of <b>EUR {s['labour_rate']:.2f}/hr</b>.",
+                B9),
+        ]))
         story.append(Paragraph(
             f"The computed <b>scheduled DMC is EUR {total_dmc:,.2f} per flight hour</b> "
             f"(EUR {total_dmc * s['fh_per_year']:,.0f} per year), comprising EUR {total_labour:,.2f}/FH labour "
@@ -1337,17 +1649,46 @@ elif st.session_state.page == "Report":
             f"Gravel operations: {s['gravel_pct']}%, STOL: {s['stol_pct']}%"
             f"{', High Altitude: ' + str(s.get('env_mix',{}).get('High Altitude',0)) + '%' if s.get('env_mix',{}).get('High Altitude',0) > 0 else ''}.",
             B9))
-        story.append(sp(3))
+        story.append(sp(2))
+
+        # ── TOTAL DMC GREEN BOX (matches web UI highlighted card) ────
+        # Four metric cards in a row: Total DMC (dark+green border) | Labour | Material | All-In
+        _lbl = lambda t, c: Paragraph(t, ParagraphStyle("_l", fontName="Helvetica-Bold",
+            fontSize=7, textColor=c, leading=9, alignment=TA_CENTER))
+        _val = lambda t, c, sz=11: Paragraph(t, ParagraphStyle("_v", fontName="Helvetica-Bold",
+            fontSize=sz, textColor=c, leading=sz+2, alignment=TA_CENTER))
+        _sub = lambda t: Paragraph(t, ParagraphStyle("_s", fontName="Helvetica",
+            fontSize=6.5, textColor=SLATE_400, leading=8, alignment=TA_CENTER))
+
+        metrics_tbl = Table([
+            [_lbl("TOTAL DMC", CYAN_400),      _lbl("Labour DMC", SLATE_600),           _lbl("Material DMC", SLATE_600),         _lbl("All-In Estimate", SLATE_600)],
+            [_val(f"EUR {total_dmc:,.2f}", WHITE, 12), _val(f"EUR {total_labour:,.2f}", BRAND_BLUE, 10), _val(f"EUR {total_material:,.2f}", BRAND_BLUE, 10), _val(f"EUR {total_all_in:,.2f}", BRAND_BLUE, 10)],
+            [_sub("per Flight Hour"),           _sub("per Flight Hour"),                 _sub("per Flight Hour"),                 _sub("incl. 40% + 15%")],
+        ], colWidths=[47*mm, 43*mm, 43*mm, 43*mm])
+        metrics_tbl.setStyle(TableStyle([
+            # First column: dark navy background + green border
+            ("BACKGROUND",    (0,0), (0,-1), NAVY),
+            ("BOX",           (0,0), (0,-1), 1.5, GREEN),
+            # Other columns: light background
+            ("BACKGROUND",    (1,0), (-1,-1), SLATE_50),
+            ("BOX",           (1,0), (1,-1), 0.4, SLATE_200),
+            ("BOX",           (2,0), (2,-1), 0.4, SLATE_200),
+            ("BOX",           (3,0), (3,-1), 0.4, SLATE_200),
+            ("VALIGN",        (0,0), (-1,-1), "MIDDLE"),
+            ("TOPPADDING",    (0,0), (-1,-1), 5),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 5),
+        ]))
+        story.append(metrics_tbl)
+        story.append(sp(4))
 
         # ── 1. PARAMETERS ──
-        story.append(Paragraph("1. Operational Parameters", SH)); story.append(hr())
         param_rows = [
             ["Parameter", "Value", "Parameter", "Value"],
             ["Aircraft", s["aircraft_type"], "MOD Variant", mod_str],
             ["Operator", s["operator"] or "N/A", "Labour Rate", f"EUR {s['labour_rate']:.2f}/hr"],
             ["Base Country", s["base_country"] or "N/A", "FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"],
             ["FH / Year", f"{s['fh_per_year']:,}", "FC / Year", f"{s['fc_per_year']:,}"],
-            ["APU Hrs / Year", f"{s['apu_hrs_per_year']:,}", "Environment", active_envs_display[:40]],
+            ["APU Hrs / Year", "N/A (no APU)" if "eco" in s["aircraft_type"].lower() else f"{s['apu_hrs_per_year']:,}", "Environment", active_envs_display[:40]],
             ["Gravel Ops", f"{s['gravel_pct']}%", "STOL Ops", f"{s['stol_pct']}%"],
         ]
         pt = Table(param_rows, colWidths=[32*mm, 48*mm, 32*mm, 48*mm])
@@ -1360,10 +1701,10 @@ elif st.session_state.page == "Report":
             ("GRID",(0,0),(-1,-1),0.3,SLATE_200),("VALIGN",(0,0),(-1,-1),"MIDDLE"),
             ("TOPPADDING",(0,0),(-1,-1),3),("BOTTOMPADDING",(0,0),(-1,-1),3),("LEFTPADDING",(0,0),(-1,-1),5),
         ]))
-        story.append(pt); story.append(sp(3))
+        story.append(KeepTogether([Paragraph("1. Operational Parameters", SH), hr(), pt]))
+        story.append(sp(3))
 
         # ── 2. DMC SUMMARY ──
-        story.append(Paragraph("2. DMC Summary", SH)); story.append(hr())
         sum_rows = [
             ["Component", "EUR / FH", "EUR / Year", "%"],
             ["Scheduled DMC", f"{total_dmc:,.2f}", f"{total_dmc * s['fh_per_year']:,.0f}", "100%"],
@@ -1385,55 +1726,79 @@ elif st.session_state.page == "Report":
             ("GRID",(0,0),(-1,-1),0.3,SLATE_200),("ALIGN",(1,0),(-1,-1),"CENTER"),
             ("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(0,-1),6),
         ]))
-        story.append(st2); story.append(sp(3))
+        story.append(KeepTogether([Paragraph("2. DMC Summary", SH), hr(), st2]))
+        story.append(sp(3))
 
         # ── 3. CATEGORY BREAKDOWN WITH CHARTS ──
-        story.append(Paragraph("3. Category Breakdown", SH)); story.append(hr())
+        # Charts stacked full-width for maximum readability
+        pie_img = Image(pie_file.name, width=168*mm, height=105*mm)
+        bar_img = Image(bar_file.name, width=168*mm, height=105*mm)
+        cat_subtitle = Paragraph(f"{len(cat_sum_pdf)} cost categories shown.", SM)
+        story.append(KeepTogether([Paragraph("3. Category Breakdown", SH), hr(), cat_subtitle]))
+        story.append(sp(1))
+        story.append(pie_img)
+        story.append(sp(2))
+        story.append(bar_img)
+        story.append(sp(3))
 
-        # Charts side by side
-        chart_row = Table(
-            [[Image(pie_file.name, width=82*mm, height=62*mm), Image(bar_file.name, width=82*mm, height=62*mm)]],
-            colWidths=[84*mm, 84*mm])
-        chart_row.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"MIDDLE"),("ALIGN",(0,0),(-1,-1),"CENTER"),
-            ("TOPPADDING",(0,0),(-1,-1),0),("BOTTOMPADDING",(0,0),(-1,-1),0)]))
-        story.append(chart_row); story.append(sp(2))
-
-        # Category table
-        cat_rows = [["#", "Category", "Labour", "Material", "Total (EUR/FH)", "%"]]
+        # Category summary table
+        cat_rows = [["#", "Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "%"]]
         for idx, (_, r) in enumerate(cat_sum_pdf.iterrows(), 1):
             cat_rows.append([str(idx), r["Category"], f"{r['DMC Labour (EUR/FH)']:.2f}",
                 f"{r['DMC Material (EUR/FH)']:.2f}", f"{r['DMC Total (EUR/FH)']:.2f}", f"{r['pct']:.1f}%"])
-        ct = Table(cat_rows, colWidths=[8*mm, 45*mm, 25*mm, 25*mm, 30*mm, 14*mm])
+        ct = Table(cat_rows, colWidths=[8*mm, 60*mm, 28*mm, 28*mm, 28*mm, 16*mm])
         ct.setStyle(TableStyle([
-            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,-1),7.5),
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,-1),8),
             ("BACKGROUND",(0,0),(-1,0),DARK_BLUE),("TEXTCOLOR",(0,0),(-1,0),WHITE),
             ("ROWBACKGROUNDS",(0,1),(-1,-1),[WHITE,SLATE_50]),("GRID",(0,0),(-1,-1),0.3,SLATE_200),
             ("ALIGN",(0,0),(0,-1),"CENTER"),("ALIGN",(2,0),(-1,-1),"CENTER"),
-            ("TOPPADDING",(0,0),(-1,-1),3),("BOTTOMPADDING",(0,0),(-1,-1),3),("LEFTPADDING",(1,0),(1,-1),4),
+            ("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(1,0),(1,-1),5),
         ]))
-        story.append(ct); story.append(sp(3))
+        story.append(KeepTogether([Paragraph("Category Summary", ParagraphStyle("SH2",
+            fontName="Helvetica-Bold", fontSize=9, textColor=DARK_BLUE, spaceBefore=4,
+            spaceAfter=2, leading=12, keepWithNext=1)), ct]))
+        story.append(sp(3))
 
         # ── 4. DETAILED BREAKDOWN ──
-        story.append(Paragraph("4. Detailed Item Breakdown", SH)); story.append(hr())
-        story.append(Paragraph(f"{len(df)} scheduled maintenance items. Category-specific adjustment factors applied.", SM))
-        story.append(sp(1))
-
-        det_cols = ["Inspection", "Cat.", "Int 1", "Int 2", "MH", "Mat (EUR)", "Occ/yr", "Adj.F", "Total EUR/FH"]
-        det_rows = [det_cols]
+        # All cells wrapped in Paragraph objects so long text wraps properly (fixes PWC row overflow)
+        det_col_hdrs = ["Inspection", "Category", "Int 1", "Int 2", "MH", "Mat (EUR)", "Occ/yr", "Adj.F", "EUR/FH"]
+        det_col_w    = [40*mm, 20*mm, 16*mm, 16*mm, 10*mm, 20*mm, 14*mm, 11*mm, 21*mm]  # total = 168mm
+        det_rows = [[Paragraph(h, CSH) for h in det_col_hdrs]]
         for _, r in df.iterrows():
-            cat_short = r["Category"].replace("Corrosion Prevention ","").replace("Structural Sampling ","").replace("Fatigue Damage ","").replace("Time Controlled ","TC ")
-            det_rows.append([r["Inspection"], cat_short, r["Interval 1"], r["Interval 2"],
-                f"{r['MH']}", f"{r['Material (EUR)']:,.0f}", f"{r['Occ/yr (Used)']:.3f}",
-                f"{r['Adj. Factor']:.3f}", f"{r['DMC Total (EUR/FH)']:.4f}"])
-        dt = Table(det_rows, colWidths=[24*mm, 14*mm, 14*mm, 14*mm, 10*mm, 16*mm, 14*mm, 12*mm, 22*mm], repeatRows=1)
+            cat_short = (r["Category"]
+                .replace("Corrosion Prevention ", "CP ")
+                .replace("Structural Sampling ",  "SSI ")
+                .replace("Fatigue Damage ",        "FD ")
+                .replace("Time Controlled ",       "TC ")
+                .replace("Engines (PWC FMP)",      "Engines\n(PWC FMP)"))
+            det_rows.append([
+                Paragraph(r["Inspection"],               CS),
+                Paragraph(cat_short,                     CS),
+                Paragraph(str(r["Interval 1"]),          CS),
+                Paragraph(str(r["Interval 2"]),          CS),
+                Paragraph(str(r["MH"]),                  CS),
+                Paragraph(f"{r['Material (EUR)']:,.0f}", CS),
+                Paragraph(f"{r['Occ/yr (Used)']:.3f}",  CS),
+                Paragraph(f"{r['Adj. Factor']:.3f}",     CS),
+                Paragraph(f"{r['DMC Total (EUR/FH)']:.4f}", CS),
+            ])
+        dt = Table(det_rows, colWidths=det_col_w, repeatRows=1)
         dt.setStyle(TableStyle([
-            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,0),5.8),("FONTSIZE",(0,1),(-1,-1),5.5),
-            ("BACKGROUND",(0,0),(-1,0),DARK_BLUE),("TEXTCOLOR",(0,0),(-1,0),WHITE),
-            ("ROWBACKGROUNDS",(0,1),(-1,-1),[WHITE,SLATE_50]),("GRID",(0,0),(-1,-1),0.2,SLATE_200),
-            ("ALIGN",(1,0),(-1,-1),"CENTER"),("ALIGN",(0,0),(0,-1),"LEFT"),
-            ("TOPPADDING",(0,0),(-1,-1),1.5),("BOTTOMPADDING",(0,0),(-1,-1),1.5),("LEFTPADDING",(0,0),(0,-1),3),
+            ("BACKGROUND",    (0,0), (-1,0),  DARK_BLUE),
+            ("ROWBACKGROUNDS",(0,1), (-1,-1), [WHITE, SLATE_50]),
+            ("GRID",          (0,0), (-1,-1), 0.2, SLATE_200),
+            ("ALIGN",         (0,0), (0,-1),  "LEFT"),
+            ("ALIGN",         (1,0), (-1,-1), "CENTER"),
+            ("VALIGN",        (0,0), (-1,-1), "TOP"),
+            ("TOPPADDING",    (0,0), (-1,-1), 2),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 2),
+            ("LEFTPADDING",   (0,0), (0,-1),  3),
         ]))
-        story.append(dt); story.append(sp(3))
+        detail_subtitle = Paragraph(f"{len(df)} maintenance items. Category-specific adjustment factors applied.", SM)
+        story.append(KeepTogether([Paragraph("4. Detailed Item Breakdown", SH), hr(), detail_subtitle]))
+        story.append(sp(1))
+        story.append(dt)
+        story.append(sp(3))
 
         # ── DISCLAIMER ──
         story.append(HRFlowable(width="100%", thickness=0.4, color=SLATE_200, spaceAfter=2))
