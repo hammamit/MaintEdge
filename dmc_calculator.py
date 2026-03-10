@@ -764,7 +764,7 @@ COUNTRIES = [
     "Czech Republic", "Greece", "Portugal", "Mexico", "Argentina",
     "Chile", "Colombia", "Peru", "Egypt", "Kenya",
     "Tanzania", "Ethiopia", "Morocco", "Thailand", "Indonesia",
-    "Malaysia", "Philippines", "Vietnam", "New Zealand", "Singapore", "Other"
+    "Malaysia", "Philippines", "Vietnam", "New Zealand", "Singapore", "Pakistan", "Other"
 ]
 
 ENVIRONMENTS = ["Temperate", "Tropical / Humid", "Arid / Desert", "Coastal / Marine", "Cold / Arctic", "High Altitude"]
@@ -1734,11 +1734,7 @@ elif st.session_state.page == "Report":
         pie_img = Image(pie_file.name, width=168*mm, height=105*mm)
         bar_img = Image(bar_file.name, width=168*mm, height=105*mm)
         cat_subtitle = Paragraph(f"{len(cat_sum_pdf)} cost categories shown.", SM)
-        story.append(KeepTogether([Paragraph("3. Category Breakdown", SH), hr(), cat_subtitle]))
-        story.append(sp(1))
-        story.append(pie_img)
-        story.append(sp(2))
-        story.append(bar_img)
+        story.append(KeepTogether([Paragraph("3. Category Breakdown", SH), hr(), cat_subtitle, sp(1), pie_img, sp(2), bar_img]))
         story.append(sp(3))
 
         # Category summary table
@@ -1795,9 +1791,7 @@ elif st.session_state.page == "Report":
             ("LEFTPADDING",   (0,0), (0,-1),  3),
         ]))
         detail_subtitle = Paragraph(f"{len(df)} maintenance items. Category-specific adjustment factors applied.", SM)
-        story.append(KeepTogether([Paragraph("4. Detailed Item Breakdown", SH), hr(), detail_subtitle]))
-        story.append(sp(1))
-        story.append(dt)
+        story.append(KeepTogether([Paragraph("4. Detailed Item Breakdown", SH), hr(), detail_subtitle, sp(1), dt]))
         story.append(sp(3))
 
         # ── DISCLAIMER ──
