@@ -1499,11 +1499,14 @@ elif st.session_state.page == "Report":
         # Pie chart (donut) using matplotlib -- no kaleido/Chrome needed
         fig_pie_mpl, ax_pie = plt.subplots(figsize=(8, 5))
         wedge_colors = CHART_COLORS[:len(cat_sum_pdf)]
+        total_val = cat_sum_pdf["DMC Total (EUR/FH)"].sum()
+        def _autopct(pct):
+            return f"{pct:.1f}%" if pct >= 3 else ""
         wedges, _, autotexts = ax_pie.pie(
             cat_sum_pdf["DMC Total (EUR/FH)"].round(2),
             labels=None,
             colors=wedge_colors,
-            autopct="%1.1f%%",
+            autopct=_autopct,
             pctdistance=0.75,
             startangle=90,
             wedgeprops=dict(width=0.55),
