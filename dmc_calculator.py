@@ -1490,57 +1490,59 @@ elif st.session_state.page == "Report":
         CHART_COLORS = ["#2563EB","#0891B2","#059669","#D97706","#7C3AED",
                         "#DC2626","#475569","#EC4899","#F59E0B","#10B981","#6366F1"]
 
-        # Pie chart -- percent INSIDE slices + right-side legend (no outside labels = no overflow)
-        fig_pie = go.Figure(data=[go.Pie(
-            labels=cat_sum_pdf["Category"],
-            values=cat_sum_pdf["DMC Total (EUR/FH)"].round(2),
-            hole=0.45,
-            marker=dict(colors=CHART_COLORS),
-            textinfo="percent",
-            textfont=dict(size=9, color="white"),
-            insidetextorientation="radial",
-        )])
-        fig_pie.update_layout(
-            title=dict(text="DMC Distribution by Category",
-                       font=dict(size=13, family="Arial", color="#1E293B")),
-            height=420, width=680,
-            margin=dict(t=55, b=20, l=20, r=220),
-            showlegend=True,
-            legend=dict(
-                orientation="v", x=0.97, y=0.5,
-                xanchor="left", yanchor="middle",
-                font=dict(size=9, family="Arial"),
-                itemsizing="constant",
-            ),
-            paper_bgcolor="white", plot_bgcolor="white",
-        )
-        pie_bytes = fig_pie.to_image(format="png", scale=2)
-        pie_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-        pie_file.write(pie_bytes); pie_file.close()
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+        import numpy as np
 
-        # Bar chart -- more bottom margin so rotated labels are fully visible
-        fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(
-            name="Labour", x=cat_sum_pdf["Category"],
-            y=cat_sum_pdf["DMC Labour (EUR/FH)"].round(2), marker_color="#2563EB"))
-        fig_bar.add_trace(go.Bar(
-            name="Material", x=cat_sum_pdf["Category"],
-            y=cat_sum_pdf["DMC Material (EUR/FH)"].round(2), marker_color="#22D3EE"))
-        fig_bar.update_layout(
-            title=dict(text="Labour vs Material by Category (EUR/FH)",
-                       font=dict(size=13, family="Arial", color="#1E293B")),
-            barmode="stack", height=420, width=680,
-            margin=dict(t=55, b=160, l=70, r=20),
-            xaxis=dict(tickangle=-40, tickfont=dict(size=8, family="Arial"), automargin=True),
-            yaxis=dict(title=dict(text="EUR / FH", font=dict(size=10, family="Arial")),
-                       tickfont=dict(size=8, family="Arial"), gridcolor="#E2E8F0"),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
-                        font=dict(size=9, family="Arial")),
-            paper_bgcolor="white", plot_bgcolor="rgba(248,250,252,1)",
+        # Pie chart (donut) using matplotlib -- no kaleido/Chrome needed
+        fig_pie_mpl, ax_pie = plt.subplots(figsize=(8, 5))
+        wedge_colors = CHART_COLORS[:len(cat_sum_pdf)]
+        wedges, _, autotexts = ax_pie.pie(
+            cat_sum_pdf["DMC Total (EUR/FH)"].round(2),
+            labels=None,
+            colors=wedge_colors,
+            autopct="%1.1f%%",
+            pctdistance=0.75,
+            startangle=90,
+            wedgeprops=dict(width=0.55),
         )
-        bar_bytes = fig_bar.to_image(format="png", scale=2)
+        for at in autotexts:
+            at.set_fontsize(8); at.set_color("white")
+        legend_patches = [mpatches.Patch(color=wedge_colors[i], label=cat_sum_pdf["Category"].iloc[i])
+                          for i in range(len(cat_sum_pdf))]
+        ax_pie.legend(handles=legend_patches, loc="center left", bbox_to_anchor=(1, 0.5), fontsize=8)
+        ax_pie.set_title("DMC Distribution by Category", fontsize=13, color="#1E293B", pad=15)
+        fig_pie_mpl.patch.set_facecolor("white")
+        pie_buf = io.BytesIO()
+        fig_pie_mpl.savefig(pie_buf, format="png", dpi=150, bbox_inches="tight", facecolor="white")
+        plt.close(fig_pie_mpl)
+        pie_buf.seek(0)
+        pie_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        pie_file.write(pie_buf.read()); pie_file.close()
+
+        # Bar chart (stacked) using matplotlib
+        fig_bar_mpl, ax_bar = plt.subplots(figsize=(8, 5))
+        x = np.arange(len(cat_sum_pdf))
+        labour = cat_sum_pdf["DMC Labour (EUR/FH)"].round(2).values
+        material = cat_sum_pdf["DMC Material (EUR/FH)"].round(2).values
+        ax_bar.bar(x, labour, 0.6, label="Labour", color="#2563EB")
+        ax_bar.bar(x, material, 0.6, bottom=labour, label="Material", color="#22D3EE")
+        ax_bar.set_xticks(x)
+        ax_bar.set_xticklabels(cat_sum_pdf["Category"], rotation=-40, ha="left", fontsize=8)
+        ax_bar.set_ylabel("EUR / FH", fontsize=10)
+        ax_bar.set_title("Labour vs Material by Category (EUR/FH)", fontsize=13, color="#1E293B", pad=15)
+        ax_bar.legend(loc="upper right", fontsize=9)
+        ax_bar.set_facecolor("#F8FAFC")
+        ax_bar.grid(axis="y", color="#E2E8F0", linewidth=0.5)
+        fig_bar_mpl.patch.set_facecolor("white")
+        bar_buf = io.BytesIO()
+        fig_bar_mpl.savefig(bar_buf, format="png", dpi=150, bbox_inches="tight", facecolor="white")
+        plt.close(fig_bar_mpl)
+        bar_buf.seek(0)
         bar_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-        bar_file.write(bar_bytes); bar_file.close()
+        bar_file.write(bar_buf.read()); bar_file.close()
 
         # ── Page template ────────────────────────────────────────────
         class PDFTemplate:
