@@ -1012,8 +1012,8 @@ elif st.session_state.page == "Setup & Calculate":
         else:
             st.markdown(f'<div class="info-box info-amber">Total is <strong>{ops_total}%</strong> -- must equal 100%. Adjust sliders.</div>', unsafe_allow_html=True)
 
-        # Keep High Altitude in the mix dict (set separately below) but not in the 100% constraint
-        new_mix["High Altitude"] = env_mix.get("High Altitude", 0)
+        # High Altitude is set separately in col4; preserve current value until slider runs
+        new_mix["High Altitude"] = s.get("env_mix", {}).get("High Altitude", 0)
         s["env_mix"] = new_mix
 
     with col4:
@@ -1029,30 +1029,36 @@ elif st.session_state.page == "Setup & Calculate":
         st.markdown(f'<div class="info-box info-slate">{lr}</div>', unsafe_allow_html=True)
 
         st.markdown(f'<div class="s-card"><div class="s-card-t">{svg_icon("target", 18)} Operational Conditions</div></div>', unsafe_allow_html=True)
-        s["stol_pct"] = st.slider("STOL Operations (%)", 0, 100, s["stol_pct"], 5)
-        ha_pct = st.slider("High Altitude Operations (%)", 0, 100, env_mix.get("High Altitude", 0), 5,
-            help="Percentage of operations from airfields above 5,000 ft. Applied as independent adder (+4% base).")
+        s["stol_pct"] = st.slider("STOL Operations (%)", 0, 100, s["stol_pct"], 5, key="stol_pct")
+        ha_pct = st.slider("High Altitude Operations (%)", 0, 100, s.get("env_mix", {}).get("High Altitude", 0), 5,
+            key="ha_pct", help="Percentage of operations from airfields above 5,000 ft. Applied as independent adder (+4% base).")
         s["env_mix"]["High Altitude"] = ha_pct
-        s["gravel_pct"] = st.slider("Gravel Runway Operations (%)", 0, 100, s["gravel_pct"], 5)
+        s["gravel_pct"] = st.slider("Gravel Runway Operations (%)", 0, 100, s["gravel_pct"], 5, key="gravel_pct")
 
     st.session_state.setup = s
 
-    # Compute factors
+    # Compute factors (exclude High Altitude from the 100% blended check)
     env_mix = s.get("env_mix", {"Temperate": 100})
+    OPS_ENVS_DISP = ["Temperate", "Tropical / Humid", "Arid / Desert", "Coastal / Marine", "Cold / Arctic"]
+    ops_sum = sum(env_mix.get(e, 0) for e in OPS_ENVS_DISP)
     gf = 1.0 + (s["gravel_pct"] / 100) * 0.15
     sf = 1.0 + (s["stol_pct"] / 100) * 0.10
-    blended_env = sum((ENVIRONMENT_FACTORS[e] * p / 100) for e, p in env_mix.items() if p > 0) if sum(env_mix.values()) == 100 else 1.0
-    active_envs_short = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in env_mix.items() if p > 0])
+    blended_env = sum((ENVIRONMENT_FACTORS[e] * env_mix.get(e, 0) / 100) for e in OPS_ENVS_DISP if env_mix.get(e, 0) > 0) if ops_sum == 100 else 1.0
+    active_envs_short = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in env_mix.items() if p > 0 and e != "High Altitude"])
+    ha_disp = env_mix.get("High Altitude", 0)
     mod_label = s.get("mod_variant", "N/A")
     mod_display = f'<div class="metric-unit">{mod_label}</div>' if mod_label != "N/A" else ""
+    ep_label = s.get("engine_program", "N/A")
+    ep_display = f' | Engine: {ep_label}' if "eco" in s["aircraft_type"].lower() else ""
 
     # Summary bar
     st.markdown("---")
     st.markdown(f"""
     <div class="metrics">
-        <div class="metric"><div class="metric-label">Aircraft</div><div class="metric-val" style="font-size:0.95rem;">{s["aircraft_type"]}</div>{mod_display}<div class="metric-unit">{s["operator"] or "N/A"} | {s["base_country"] or "N/A"}</div></div>
+        <div class="metric"><div class="metric-label">Aircraft</div><div class="metric-val" style="font-size:0.95rem;">{s["aircraft_type"]}</div>{mod_display}<div class="metric-unit">{s["operator"] or "N/A"} | {s["base_country"] or "N/A"}{ep_display}</div></div>
         <div class="metric"><div class="metric-label">Utilization</div><div class="metric-val" style="font-size:1rem;">{s["fh_per_year"]:,} FH / {s["fc_per_year"]:,} FC</div><div class="metric-unit">{"No APU" if "eco" in s["aircraft_type"].lower() else f"APU: {s['apu_hrs_per_year']:,} hrs"} | Ratio: {ratio}</div></div>
         <div class="metric"><div class="metric-label">Blended Env</div><div class="metric-val">x{blended_env:.3f}</div><div class="metric-unit">{active_envs_short}</div></div>
+        <div class="metric"><div class="metric-label">Ops Factors</div><div class="metric-val" style="font-size:0.9rem;">Gravel {s["gravel_pct"]}% | STOL {s["stol_pct"]}% | HA {ha_disp}%</div><div class="metric-unit">Gravel x{gf:.3f} | STOL x{sf:.3f}</div></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1263,9 +1269,11 @@ elif st.session_state.page == "Report":
         st.stop()
 
     env_mix = s.get("env_mix", {"Temperate": 100})
+    OPS_ENVS_RPT = ["Temperate", "Tropical / Humid", "Arid / Desert", "Coastal / Marine", "Cold / Arctic"]
+    ops_sum_rpt = sum(env_mix.get(e, 0) for e in OPS_ENVS_RPT)
     gf = 1.0 + (s["gravel_pct"] / 100) * 0.15
     sf = 1.0 + (s["stol_pct"] / 100) * 0.10
-    blended_env = sum((ENVIRONMENT_FACTORS[e] * p / 100) for e, p in env_mix.items() if p > 0) if sum(env_mix.values()) == 100 else 1.0
+    blended_env = sum((ENVIRONMENT_FACTORS[e] * env_mix.get(e, 0) / 100) for e in OPS_ENVS_RPT if env_mix.get(e, 0) > 0) if ops_sum_rpt == 100 else 1.0
     active_envs_str = ", ".join([f"{e} {p}%" for e, p in env_mix.items() if p > 0])
 
     results = calculate_dmc(get_aircraft_data(s["aircraft_type"], s.get("engine_program", "FMP")), s["fh_per_year"], s["fc_per_year"],
