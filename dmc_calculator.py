@@ -301,11 +301,18 @@ def get_pwc_engine_rate_eur(fh_per_year, fc_per_year):
     return rate_usd_2023 * _PWC_USD_TO_EUR * _PWC_ESCALATION_FACTOR * _PWC_ENGINE_COUNT
 
 
-def get_aircraft_data(aircraft_type):
+def get_aircraft_data(aircraft_type, engine_program="FMP"):
     """Return the maintenance data list for the selected aircraft type."""
     if "328-300" in aircraft_type or "Jet" in aircraft_type:
         return D328_300_JET_DATA
     if "eco" in aircraft_type.lower():
+        if engine_program == "No FMP":
+            # No FMP: use traditional overhaul-based engine costing
+            # Same labour hours as 328-100 (360 MH), 85% of legacy material cost
+            engine_item = {"inspection": "Engine Change (2EA)", "int1": None, "param1": None,
+                           "int2": 8000, "param2": "FH", "mh": 360, "mat": 2040000.00,
+                           "category": "Engines"}
+            return D328_ECO_DATA + [engine_item]
         return D328_ECO_DATA
     return DO328_100_DATA
 
@@ -518,6 +525,7 @@ if "setup" not in st.session_state:
         "gravel_pct": 0,
         "labour_rate": 85.0,
         "stol_pct": 0,
+        "engine_program": "FMP",
     }
 
 if "page" not in st.session_state:
@@ -941,6 +949,15 @@ elif st.session_state.page == "Setup & Calculate":
             s["mod_variant"] = "N/A"
             st.markdown(f'<div class="info-box info-slate"><strong>{ac["full_name"]}</strong><br>Engines: {ac["engines"]} | Pax: {ac["pax"]}<br><span style="color:#94A3B8">{ac["description"]}</span></div>', unsafe_allow_html=True)
 
+        # Engine program selector for D328eco
+        if "eco" in aircraft_type.lower():
+            ep_opts = ["FMP", "No FMP"]
+            ep_idx = ep_opts.index(s.get("engine_program", "FMP")) if s.get("engine_program", "FMP") in ep_opts else 0
+            s["engine_program"] = st.selectbox("Engine Program", ep_opts, index=ep_idx,
+                help="FMP: PWC Fleet Maintenance Program (pay-per-hour) | No FMP: Traditional overhaul-based costing")
+        else:
+            s["engine_program"] = "N/A"
+
         s["operator"] = st.text_input("Operator Name", value=s["operator"], placeholder="e.g. UMSI Guinea, Nolinor Aviation")
         s["base_country"] = st.selectbox("Base Country", [""] + COUNTRIES,
             index=(COUNTRIES.index(s["base_country"]) + 1) if s["base_country"] in COUNTRIES else 0)
@@ -1055,12 +1072,12 @@ elif st.session_state.page == "Setup & Calculate":
 
     if st.session_state.get("calculated", False):
         with st.spinner("Computing DMC for all maintenance items..."):
-            results = calculate_dmc(get_aircraft_data(s["aircraft_type"]), s["fh_per_year"], s["fc_per_year"],
+            results = calculate_dmc(get_aircraft_data(s["aircraft_type"], s.get("engine_program", "FMP")), s["fh_per_year"], s["fc_per_year"],
                 s["apu_hrs_per_year"], s["labour_rate"], s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
 
-            # D328eco: inject PWC FMP engine DMC as a fixed EUR/FH item
+            # D328eco with FMP: inject PWC FMP engine DMC as a fixed EUR/FH item
             # The FMP rate already covers all engine maintenance; no environmental adjustment applied.
-            if "eco" in s["aircraft_type"].lower():
+            if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
                 avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
                 pwc_rate = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
                 results.append({
@@ -1251,10 +1268,10 @@ elif st.session_state.page == "Report":
     blended_env = sum((ENVIRONMENT_FACTORS[e] * p / 100) for e, p in env_mix.items() if p > 0) if sum(env_mix.values()) == 100 else 1.0
     active_envs_str = ", ".join([f"{e} {p}%" for e, p in env_mix.items() if p > 0])
 
-    results = calculate_dmc(get_aircraft_data(s["aircraft_type"]), s["fh_per_year"], s["fc_per_year"],
+    results = calculate_dmc(get_aircraft_data(s["aircraft_type"], s.get("engine_program", "FMP")), s["fh_per_year"], s["fc_per_year"],
         s["apu_hrs_per_year"], s["labour_rate"], env_mix, s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
 
-    if "eco" in s["aircraft_type"].lower():
+    if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
         avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
         pwc_rate = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
         results.append({
@@ -1497,9 +1514,8 @@ elif st.session_state.page == "Report":
         import numpy as np
 
         # Pie chart (donut) using matplotlib -- no kaleido/Chrome needed
-        fig_pie_mpl, ax_pie = plt.subplots(figsize=(8, 5))
+        fig_pie_mpl, ax_pie = plt.subplots(figsize=(9, 7))
         wedge_colors = CHART_COLORS[:len(cat_sum_pdf)]
-        total_val = cat_sum_pdf["DMC Total (EUR/FH)"].sum()
         def _autopct(pct):
             return f"{pct:.1f}%" if pct >= 3 else ""
         wedges, _, autotexts = ax_pie.pie(
@@ -1510,16 +1526,19 @@ elif st.session_state.page == "Report":
             pctdistance=0.75,
             startangle=90,
             wedgeprops=dict(width=0.55),
+            radius=1.0,
         )
         for at in autotexts:
-            at.set_fontsize(8); at.set_color("white")
+            at.set_fontsize(9); at.set_color("white"); at.set_fontweight("bold")
         legend_patches = [mpatches.Patch(color=wedge_colors[i], label=cat_sum_pdf["Category"].iloc[i])
                           for i in range(len(cat_sum_pdf))]
-        ax_pie.legend(handles=legend_patches, loc="center left", bbox_to_anchor=(1, 0.5), fontsize=8)
+        ax_pie.legend(handles=legend_patches, loc="lower center", bbox_to_anchor=(0.5, -0.22),
+                      ncol=3, fontsize=8, frameon=False)
         ax_pie.set_title("DMC Distribution by Category", fontsize=13, color="#1E293B", pad=15)
         fig_pie_mpl.patch.set_facecolor("white")
+        fig_pie_mpl.subplots_adjust(bottom=0.22)
         pie_buf = io.BytesIO()
-        fig_pie_mpl.savefig(pie_buf, format="png", dpi=150, bbox_inches="tight", facecolor="white")
+        fig_pie_mpl.savefig(pie_buf, format="png", dpi=300, bbox_inches="tight", facecolor="white")
         plt.close(fig_pie_mpl)
         pie_buf.seek(0)
         pie_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
@@ -1695,6 +1714,7 @@ elif st.session_state.page == "Report":
             ["FH / Year", f"{s['fh_per_year']:,}", "FC / Year", f"{s['fc_per_year']:,}"],
             ["APU Hrs / Year", "N/A (no APU)" if "eco" in s["aircraft_type"].lower() else f"{s['apu_hrs_per_year']:,}", "Environment", active_envs_display[:40]],
             ["Gravel Ops", f"{s['gravel_pct']}%", "STOL Ops", f"{s['stol_pct']}%"],
+            ["Engine Program", s.get("engine_program", "N/A") if "eco" in s["aircraft_type"].lower() else "N/A", "", ""],
         ]
         pt = Table(param_rows, colWidths=[32*mm, 48*mm, 32*mm, 48*mm])
         pt.setStyle(TableStyle([
@@ -1736,7 +1756,7 @@ elif st.session_state.page == "Report":
 
         # ── 3. CATEGORY BREAKDOWN WITH CHARTS ──
         # Charts stacked full-width for maximum readability
-        pie_img = Image(pie_file.name, width=168*mm, height=105*mm)
+        pie_img = Image(pie_file.name, width=168*mm, height=130*mm)
         bar_img = Image(bar_file.name, width=168*mm, height=105*mm)
         cat_subtitle = Paragraph(f"{len(cat_sum_pdf)} cost categories shown.", SM)
         story.append(KeepTogether([Paragraph("3. Category Breakdown", SH), hr(), cat_subtitle, sp(1), pie_img, sp(2), bar_img]))
@@ -1831,8 +1851,8 @@ elif st.session_state.page == "Report":
             file_name=f"{base_filename}.pdf",
             mime="application/pdf",
         )
-    except ImportError:
-        st.warning("PDF export requires reportlab. Install with: pip install reportlab")
+    except ImportError as e:
+        st.warning(f"PDF export failed — missing dependency: {e}")
 
     # Parameters reference
     st.markdown("---")
