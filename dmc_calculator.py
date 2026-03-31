@@ -1770,6 +1770,7 @@ elif st.session_state.page == "Report":
         logistics    = total_dmc * 0.15
         total_all_in = total_dmc + unsched + logistics
         mod_str = s.get('mod_variant', 'N/A')
+        _hotel_pdf = s.get("hotel_mode_hrs", 0)
         active_envs_display = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in s.get("env_mix", {}).items() if p > 0])
 
         # ── EXECUTIVE SUMMARY (KeepTogether: heading + hr + first paragraph) ──
@@ -1835,7 +1836,6 @@ elif st.session_state.page == "Report":
         story.append(sp(4))
 
         # ── 1. PARAMETERS ──
-        _hotel_pdf = s.get("hotel_mode_hrs", 0)
         param_rows = [
             ["Parameter", "Value", "Parameter", "Value"],
             ["Aircraft", s["aircraft_type"], "MOD Variant", mod_str],
