@@ -441,7 +441,7 @@ def get_category_factor(category, env_mix, gravel_pct, stol_pct, mod_variant="MO
 # ----------------------------------------------------------------
 # DMC CALCULATION ENGINE
 # ----------------------------------------------------------------
-def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_mix, gravel_pct, stol_pct, mod_variant="MOD 10"):
+def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_mix, gravel_pct, stol_pct, mod_variant="MOD 10", hotel_mode_hrs=0):
     results = []
 
     for item in data:
@@ -452,6 +452,56 @@ def calculate_dmc(data, fh_yr, fc_yr, apu_hrs_yr, labour_rate, env_mix, gravel_p
         mh = item["mh"]
         mat = item["mat"]
         cat = item["category"]
+
+        # ── Hotel Mode: split dual-engine items into Eng 1 / Eng 2 ──
+        is_dual_engine = ("(2EA)" in item["inspection"] and cat == "Engines" and hotel_mode_hrs > 0)
+        if is_dual_engine:
+            eng_mh = mh / 2
+            eng_mat = mat / 2
+            for eng_num, eng_operating_hrs in [(1, fh_yr), (2, fh_yr + hotel_mode_hrs)]:
+                cat_factor, _, _, _ = get_category_factor(cat, env_mix, gravel_pct, stol_pct, mod_variant)
+                e_occ1 = 0.0
+                if int1 is not None and param1 is not None:
+                    p1 = param1.lower()
+                    if "day" in p1:
+                        e_occ1 = 365.0 / int1
+                    elif "month" in p1:
+                        e_occ1 = 12.0 / int1
+                e_occ2 = 0.0
+                if int2 is not None and param2 is not None:
+                    p2 = param2.lower()
+                    if p2 == "fh":
+                        e_occ2 = eng_operating_hrs / int2
+                    elif p2 == "fc":
+                        e_occ2 = fc_yr / int2
+                    elif "apu" in p2:
+                        e_occ2 = apu_hrs_yr / int2
+                elif int2 is not None and param2 is None:
+                    e_occ2 = eng_operating_hrs / int2
+                e_occ = max(e_occ1, e_occ2)
+                e_src = "Calendar" if e_occ1 > e_occ2 else ("Usage" if e_occ2 > 0 else "Calendar")
+                e_dmc_l = (e_occ * labour_rate * eng_mh) / fh_yr if fh_yr > 0 else 0
+                e_dmc_m = (e_occ * eng_mat) / fh_yr if fh_yr > 0 else 0
+                e_dmc_l_adj = e_dmc_l * cat_factor
+                e_dmc_m_adj = e_dmc_m * cat_factor
+                hotel_note = f" +{hotel_mode_hrs} Hotel hrs" if eng_num == 2 else ""
+                results.append({
+                    "Category": cat,
+                    "Inspection": f"{item['inspection'].replace('(2EA)', '').strip()} -- Eng {eng_num} (1EA){hotel_note}",
+                    "Interval 1": f"{int1} {param1}" if int1 and param1 else " -- ",
+                    "Interval 2": f"{int(int2)} {param2}" if int2 and param2 else " -- ",
+                    "MH": eng_mh,
+                    "Material (EUR)": eng_mat,
+                    "Occ/yr (Cal)": round(e_occ1, 4),
+                    "Occ/yr (Usage)": round(e_occ2, 4),
+                    "Occ/yr (Used)": round(e_occ, 4),
+                    "Driver": e_src,
+                    "Adj. Factor": round(cat_factor, 4),
+                    "DMC Labour (EUR/FH)": round(e_dmc_l_adj, 4),
+                    "DMC Material (EUR/FH)": round(e_dmc_m_adj, 4),
+                    "DMC Total (EUR/FH)": round(e_dmc_l_adj + e_dmc_m_adj, 4),
+                })
+            continue
 
         # Category-specific combined factor (includes MOD variant)
         cat_factor, _, _, _ = get_category_factor(cat, env_mix, gravel_pct, stol_pct, mod_variant)
@@ -526,6 +576,7 @@ if "setup" not in st.session_state:
         "labour_rate": 85.0,
         "stol_pct": 0,
         "engine_program": "FMP",
+        "hotel_mode_hrs": 0,
     }
 
 if "page" not in st.session_state:
@@ -770,7 +821,7 @@ COUNTRIES = [
     "Saudi Arabia", "Turkey", "Italy", "Spain", "Sweden",
     "Norway", "Switzerland", "Netherlands", "Austria", "Poland",
     "Czech Republic", "Greece", "Portugal", "Mexico", "Argentina",
-    "Chile", "Colombia", "Peru", "Egypt", "Kenya",
+    "Chile", "Colombia", "Guyana", "Peru", "Egypt", "Kenya",
     "Tanzania", "Ethiopia", "Morocco", "Thailand", "Indonesia",
     "Malaysia", "Philippines", "Vietnam", "New Zealand", "Singapore", "Pakistan", "Other"
 ]
@@ -973,6 +1024,19 @@ elif st.session_state.page == "Setup & Calculate":
             s["apu_hrs_per_year"] = 0
             st.markdown('<div class="info-box info-slate">No APU fitted -- D328eco does not have an APU.</div>', unsafe_allow_html=True)
 
+        if "eco" in s["aircraft_type"].lower():
+            s["hotel_mode_hrs"] = st.number_input("Hotel Mode Hours / Year", min_value=0, max_value=2000,
+                value=s.get("hotel_mode_hrs", 0), step=50, key="hotel_mode_hrs_input",
+                help="Annual hours Engine 2 runs on the ground for cabin power (heating, AC, lighting). "
+                     "D328eco has no APU -- Engine 2 is typically used for ground power.")
+            if s["hotel_mode_hrs"] > 0:
+                eng2_total = s["fh_per_year"] + s["hotel_mode_hrs"]
+                st.markdown(f'<div class="info-box info-amber"><strong>Hotel Mode active:</strong> Engine 2 total operating hours = <strong>{eng2_total:,} hrs/yr</strong> ({s["fh_per_year"]:,} FH + {s["hotel_mode_hrs"]:,} Hotel)</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="info-box info-slate">No APU -- consider setting Hotel Mode hours if Engine 2 is used for ground power.</div>', unsafe_allow_html=True)
+        else:
+            s["hotel_mode_hrs"] = 0
+
         if s["fc_per_year"] > 0:
             ratio = round(s["fh_per_year"] / s["fc_per_year"], 2)
             avg_flt = round(s["fh_per_year"] / s["fc_per_year"] * 60, 0)
@@ -1056,7 +1120,7 @@ elif st.session_state.page == "Setup & Calculate":
     st.markdown(f"""
     <div class="metrics">
         <div class="metric"><div class="metric-label">Aircraft</div><div class="metric-val" style="font-size:0.95rem;">{s["aircraft_type"]}</div>{mod_display}<div class="metric-unit">{s["operator"] or "N/A"} | {s["base_country"] or "N/A"}{ep_display}</div></div>
-        <div class="metric"><div class="metric-label">Utilization</div><div class="metric-val" style="font-size:1rem;">{s["fh_per_year"]:,} FH / {s["fc_per_year"]:,} FC</div><div class="metric-unit">{"No APU" if "eco" in s["aircraft_type"].lower() else f"APU: {s['apu_hrs_per_year']:,} hrs"} | Ratio: {ratio}</div></div>
+        <div class="metric"><div class="metric-label">Utilization</div><div class="metric-val" style="font-size:1rem;">{s["fh_per_year"]:,} FH / {s["fc_per_year"]:,} FC</div><div class="metric-unit">{"No APU" if "eco" in s["aircraft_type"].lower() else f"APU: {s['apu_hrs_per_year']:,} hrs"} | Ratio: {ratio}{f" | Hotel: {s['hotel_mode_hrs']:,} hrs" if s.get('hotel_mode_hrs', 0) > 0 else ""}</div></div>
         <div class="metric"><div class="metric-label">Blended Env</div><div class="metric-val">x{blended_env:.3f}</div><div class="metric-unit">{active_envs_short}</div></div>
         <div class="metric"><div class="metric-label">Ops Factors</div><div class="metric-val" style="font-size:0.9rem;">Gravel {s["gravel_pct"]}% | STOL {s["stol_pct"]}% | HA {ha_disp}%</div><div class="metric-unit">Gravel x{gf:.3f} | STOL x{sf:.3f}</div></div>
     </div>
@@ -1078,30 +1142,57 @@ elif st.session_state.page == "Setup & Calculate":
 
     if st.session_state.get("calculated", False):
         with st.spinner("Computing DMC for all maintenance items..."):
+            hotel_hrs = s.get("hotel_mode_hrs", 0)
             results = calculate_dmc(get_aircraft_data(s["aircraft_type"], s.get("engine_program", "FMP")), s["fh_per_year"], s["fc_per_year"],
-                s["apu_hrs_per_year"], s["labour_rate"], s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+                s["apu_hrs_per_year"], s["labour_rate"], s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"), hotel_hrs)
 
             # D328eco with FMP: inject PWC FMP engine DMC as a fixed EUR/FH item
             # The FMP rate already covers all engine maintenance; no environmental adjustment applied.
             if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
                 avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
-                pwc_rate = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
-                results.append({
-                    "Category":               "Engines (PWC FMP)",
-                    "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
-                    "Interval 1":             "Pay-per-hour",
-                    "Interval 2":             "Pay-per-hour",
-                    "MH":                     0,
-                    "Material (EUR)":         0,
-                    "Occ/yr (Cal)":           0,
-                    "Occ/yr (Usage)":         0,
-                    "Occ/yr (Used)":          0,
-                    "Driver":                 "FMP Rate",
-                    "Adj. Factor":            1.0,
-                    "DMC Labour (EUR/FH)":    0.0,
-                    "DMC Material (EUR/FH)":  round(pwc_rate, 4),
-                    "DMC Total (EUR/FH)":     round(pwc_rate, 4),
-                })
+                pwc_rate_2ea = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+                rate_per_engine = pwc_rate_2ea / _PWC_ENGINE_COUNT
+
+                if hotel_hrs > 0:
+                    # Split FMP into Engine 1 (flight hours) and Engine 2 (flight + hotel)
+                    eng2_rate = rate_per_engine * (s["fh_per_year"] + hotel_hrs) / s["fh_per_year"] if s["fh_per_year"] > 0 else rate_per_engine
+                    for eng_num, eng_rate, eng_note in [
+                        (1, rate_per_engine, ""),
+                        (2, eng2_rate, f" +{hotel_hrs} Hotel hrs"),
+                    ]:
+                        results.append({
+                            "Category":               "Engines (PWC FMP)",
+                            "Inspection":             f"PW127XT-S FMP -- Eng {eng_num} (1EA){eng_note} (avg {avg_min_disp} min/flt, $2023 esc.)",
+                            "Interval 1":             "Pay-per-hour",
+                            "Interval 2":             "Pay-per-hour",
+                            "MH":                     0,
+                            "Material (EUR)":         0,
+                            "Occ/yr (Cal)":           0,
+                            "Occ/yr (Usage)":         0,
+                            "Occ/yr (Used)":          0,
+                            "Driver":                 "FMP Rate",
+                            "Adj. Factor":            1.0,
+                            "DMC Labour (EUR/FH)":    0.0,
+                            "DMC Material (EUR/FH)":  round(eng_rate, 4),
+                            "DMC Total (EUR/FH)":     round(eng_rate, 4),
+                        })
+                else:
+                    results.append({
+                        "Category":               "Engines (PWC FMP)",
+                        "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
+                        "Interval 1":             "Pay-per-hour",
+                        "Interval 2":             "Pay-per-hour",
+                        "MH":                     0,
+                        "Material (EUR)":         0,
+                        "Occ/yr (Cal)":           0,
+                        "Occ/yr (Usage)":         0,
+                        "Occ/yr (Used)":          0,
+                        "Driver":                 "FMP Rate",
+                        "Adj. Factor":            1.0,
+                        "DMC Labour (EUR/FH)":    0.0,
+                        "DMC Material (EUR/FH)":  round(pwc_rate_2ea, 4),
+                        "DMC Total (EUR/FH)":     round(pwc_rate_2ea, 4),
+                    })
 
             df = pd.DataFrame(results)
             st.session_state.calc_results = results
@@ -1276,28 +1367,54 @@ elif st.session_state.page == "Report":
     blended_env = sum((ENVIRONMENT_FACTORS[e] * env_mix.get(e, 0) / 100) for e in OPS_ENVS_RPT if env_mix.get(e, 0) > 0) if ops_sum_rpt == 100 else 1.0
     active_envs_str = ", ".join([f"{e} {p}%" for e, p in env_mix.items() if p > 0])
 
+    hotel_hrs = s.get("hotel_mode_hrs", 0)
     results = calculate_dmc(get_aircraft_data(s["aircraft_type"], s.get("engine_program", "FMP")), s["fh_per_year"], s["fc_per_year"],
-        s["apu_hrs_per_year"], s["labour_rate"], env_mix, s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+        s["apu_hrs_per_year"], s["labour_rate"], env_mix, s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"), hotel_hrs)
 
     if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
         avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
-        pwc_rate = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
-        results.append({
-            "Category":               "Engines (PWC FMP)",
-            "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
-            "Interval 1":             "Pay-per-hour",
-            "Interval 2":             "Pay-per-hour",
-            "MH":                     0,
-            "Material (EUR)":         0,
-            "Occ/yr (Cal)":           0,
-            "Occ/yr (Usage)":         0,
-            "Occ/yr (Used)":          0,
-            "Driver":                 "FMP Rate",
-            "Adj. Factor":            1.0,
-            "DMC Labour (EUR/FH)":    0.0,
-            "DMC Material (EUR/FH)":  round(pwc_rate, 4),
-            "DMC Total (EUR/FH)":     round(pwc_rate, 4),
-        })
+        pwc_rate_2ea = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+        rate_per_engine = pwc_rate_2ea / _PWC_ENGINE_COUNT
+
+        if hotel_hrs > 0:
+            eng2_rate = rate_per_engine * (s["fh_per_year"] + hotel_hrs) / s["fh_per_year"] if s["fh_per_year"] > 0 else rate_per_engine
+            for eng_num, eng_rate, eng_note in [
+                (1, rate_per_engine, ""),
+                (2, eng2_rate, f" +{hotel_hrs} Hotel hrs"),
+            ]:
+                results.append({
+                    "Category":               "Engines (PWC FMP)",
+                    "Inspection":             f"PW127XT-S FMP -- Eng {eng_num} (1EA){eng_note} (avg {avg_min_disp} min/flt, $2023 esc.)",
+                    "Interval 1":             "Pay-per-hour",
+                    "Interval 2":             "Pay-per-hour",
+                    "MH":                     0,
+                    "Material (EUR)":         0,
+                    "Occ/yr (Cal)":           0,
+                    "Occ/yr (Usage)":         0,
+                    "Occ/yr (Used)":          0,
+                    "Driver":                 "FMP Rate",
+                    "Adj. Factor":            1.0,
+                    "DMC Labour (EUR/FH)":    0.0,
+                    "DMC Material (EUR/FH)":  round(eng_rate, 4),
+                    "DMC Total (EUR/FH)":     round(eng_rate, 4),
+                })
+        else:
+            results.append({
+                "Category":               "Engines (PWC FMP)",
+                "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
+                "Interval 1":             "Pay-per-hour",
+                "Interval 2":             "Pay-per-hour",
+                "MH":                     0,
+                "Material (EUR)":         0,
+                "Occ/yr (Cal)":           0,
+                "Occ/yr (Usage)":         0,
+                "Occ/yr (Used)":          0,
+                "Driver":                 "FMP Rate",
+                "Adj. Factor":            1.0,
+                "DMC Labour (EUR/FH)":    0.0,
+                "DMC Material (EUR/FH)":  round(pwc_rate_2ea, 4),
+                "DMC Total (EUR/FH)":     round(pwc_rate_2ea, 4),
+            })
 
     df = pd.DataFrame(results)
 
@@ -1368,6 +1485,7 @@ elif st.session_state.page == "Report":
         row = 5
         ws1.cell(row=row, column=1, value="OPERATIONAL PARAMETERS").font = blue_font
         row = 6
+        _hotel = s.get("hotel_mode_hrs", 0)
         param_data = [
             ("Aircraft Type", s["aircraft_type"]),
             ("Operator", s["operator"] or "N/A"),
@@ -1375,6 +1493,8 @@ elif st.session_state.page == "Report":
             ("FH / Year", f"{s['fh_per_year']:,}"),
             ("FC / Year", f"{s['fc_per_year']:,}"),
             ("APU Hrs / Year", f"{s['apu_hrs_per_year']:,}"),
+            ("Hotel Mode Hrs / Year", f"{_hotel:,}" if _hotel > 0 else "0 (off)"),
+            ("Eng 2 Operating Hrs", f"{s['fh_per_year'] + _hotel:,}" if _hotel > 0 else f"{s['fh_per_year']:,} (same as FH)"),
             ("FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"),
             ("Labour Rate (EUR/hr)", f"{s['labour_rate']:.2f}"),
             ("Environment", active_envs_str),
@@ -1660,7 +1780,8 @@ elif st.session_state.page == "Report":
                 f"{' (' + mod_str + ')' if mod_str != 'N/A' else ''}</b> operated by "
                 f"<b>{s['operator'] or 'N/A'}</b> based in <b>{s['base_country'] or 'N/A'}</b>. "
                 f"The analysis is based on an annual utilization of <b>{s['fh_per_year']:,} flight hours</b> and "
-                f"<b>{s['fc_per_year']:,} flight cycles</b>, with a labour rate of <b>EUR {s['labour_rate']:.2f}/hr</b>.",
+                f"<b>{s['fc_per_year']:,} flight cycles</b>, with a labour rate of <b>EUR {s['labour_rate']:.2f}/hr</b>."
+                + (f" Hotel Mode is active at <b>{_hotel_pdf:,} hrs/yr</b>, increasing Engine 2 total operating hours to <b>{s['fh_per_year'] + _hotel_pdf:,}</b>." if _hotel_pdf > 0 else ""),
                 B9),
         ]))
         story.append(Paragraph(
@@ -1714,6 +1835,7 @@ elif st.session_state.page == "Report":
         story.append(sp(4))
 
         # ── 1. PARAMETERS ──
+        _hotel_pdf = s.get("hotel_mode_hrs", 0)
         param_rows = [
             ["Parameter", "Value", "Parameter", "Value"],
             ["Aircraft", s["aircraft_type"], "MOD Variant", mod_str],
@@ -1721,6 +1843,7 @@ elif st.session_state.page == "Report":
             ["Base Country", s["base_country"] or "N/A", "FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"],
             ["FH / Year", f"{s['fh_per_year']:,}", "FC / Year", f"{s['fc_per_year']:,}"],
             ["APU Hrs / Year", "N/A (no APU)" if "eco" in s["aircraft_type"].lower() else f"{s['apu_hrs_per_year']:,}", "Environment", active_envs_display[:40]],
+            ["Hotel Mode Hrs", f"{_hotel_pdf:,}" if _hotel_pdf > 0 else "Off", "Eng 2 Total Hrs", f"{s['fh_per_year'] + _hotel_pdf:,}" if _hotel_pdf > 0 else "= FH"],
             ["Gravel Ops", f"{s['gravel_pct']}%", "STOL Ops", f"{s['stol_pct']}%"],
             ["Engine Program", s.get("engine_program", "N/A") if "eco" in s["aircraft_type"].lower() else "N/A", "", ""],
         ]
@@ -1866,16 +1989,20 @@ elif st.session_state.page == "Report":
     st.markdown("---")
     st.markdown(f'<div class="sec-head">{svg_icon("settings", 20)} <span>Report</span> Parameters</div>', unsafe_allow_html=True)
 
+    _hotel_rpt = s.get("hotel_mode_hrs", 0)
     params = {
         "Parameter": [
             "Aircraft Type", "MOD Variant", "Operator", "Base Country", "FH/Year", "FC/Year",
-            "APU Hrs/Year", "FH/FC Ratio", "Labour Rate", "Environment Mix",
+            "APU Hrs/Year", "Hotel Mode Hrs/Year", "Eng 2 Operating Hrs/Year",
+            "FH/FC Ratio", "Labour Rate", "Environment Mix",
             "Blended Env Factor", "Gravel %", "Gravel Factor", "STOL %", "STOL Factor",
             "Factors", "Category-Specific",
         ],
         "Value": [
             s["aircraft_type"], s.get("mod_variant", "N/A"), s["operator"] or "N/A", s["base_country"] or "N/A",
             f"{s['fh_per_year']:,}", f"{s['fc_per_year']:,}", f"{s['apu_hrs_per_year']:,}",
+            f"{_hotel_rpt:,}" if _hotel_rpt > 0 else "0 (off)",
+            f"{s['fh_per_year'] + _hotel_rpt:,}" if _hotel_rpt > 0 else f"{s['fh_per_year']:,} (same as FH)",
             f"{s['fh_fc_ratio']:.2f}", f"EUR {s['labour_rate']:.2f}/hr", active_envs_str,
             f"x{blended_env:.3f}", f"{s['gravel_pct']}%", f"x{gf:.2f}", f"{s['stol_pct']}%", f"x{sf:.2f}",
             "Env x Gravel x STOL", "Weighted per category (see Calculate page)",
