@@ -5,6 +5,21 @@ import plotly.express as px
 import math
 
 # ----------------------------------------------------------------
+# FOREX UTILITY
+# ----------------------------------------------------------------
+@st.cache_data(ttl=3600)
+def get_eur_usd_rate():
+    """Fetch live EUR/USD exchange rate (1 EUR = ? USD). Cached for 1 hour.
+    Falls back to 1.08 if the external service is unreachable."""
+    try:
+        import urllib.request, json
+        with urllib.request.urlopen("https://open.er-api.com/v6/latest/EUR", timeout=5) as r:
+            data = json.loads(r.read())
+        return float(data["rates"]["USD"])
+    except Exception:
+        return 1.08  # conservative fallback
+
+# ----------------------------------------------------------------
 # PAGE CONFIG
 # ----------------------------------------------------------------
 st.set_page_config(
@@ -243,6 +258,8 @@ D328_ECO_DATA = [
     {"inspection": "Brakes (4EA)",          "int1": None, "param1": None,     "int2": 3000, "param2": "FC", "mh": 8,   "mat": 80000.00,   "category": "Landing Gear"},
     {"inspection": "NLG Tires (2EA)",       "int1": None, "param1": None,     "int2": 250,  "param2": "FC", "mh": 4,   "mat": 1746.72,    "category": "Landing Gear"},
     {"inspection": "MLG Tires (4EA)",       "int1": None, "param1": None,     "int2": 150,  "param2": "FC", "mh": 16,  "mat": 7600.00,    "category": "Landing Gear"},
+    # Engine Life Limited Parts -- hard-times, always applicable regardless of FMP program
+    {"inspection": "LLP HPT Blades Discard (2EA)", "int1": None, "param1": None, "int2": 15000, "param2": "FC", "mh": 160, "mat": 240000.00, "category": "Engines"},
 ]
 
 # ----------------------------------------------------------------
@@ -1009,7 +1026,7 @@ elif st.session_state.page == "Setup & Calculate":
         else:
             s["engine_program"] = "N/A"
 
-        s["operator"] = st.text_input("Operator Name", value=s["operator"], placeholder="e.g. UMSI Guinea, Nolinor Aviation")
+        s["operator"] = st.text_input("Operator Name", value=s["operator"], placeholder="Enter operator name")
         s["base_country"] = st.selectbox("Base Country", [""] + COUNTRIES,
             index=(COUNTRIES.index(s["base_country"]) + 1) if s["base_country"] in COUNTRIES else 0)
 
@@ -1128,17 +1145,35 @@ elif st.session_state.page == "Setup & Calculate":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── CALCULATE BUTTON ──
-    col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+    # ── CALCULATE BUTTONS ──
+    col_btn1, col_btn2, col_btn3, col_btn4, col_btn5 = st.columns([1, 1.5, 0.3, 1.5, 1])
     with col_btn2:
-        calculate_pressed = st.button(
-            "CALCULATE DMC",
+        calc_eur_pressed = st.button(
+            "CALCULATE DMC — EUR",
             use_container_width=True,
             type="primary",
+            help="Compute and display all DMC values in Euro (EUR).",
+        )
+    with col_btn4:
+        calc_usd_pressed = st.button(
+            "CALCULATE DMC — USD",
+            use_container_width=True,
+            type="primary",
+            help="Compute DMC in Euro then convert to US Dollar using today's live exchange rate.",
         )
 
-    if calculate_pressed:
+    if calc_eur_pressed:
         st.session_state.calculated = True
+        st.session_state.calc_currency = "EUR"
+        st.session_state.forex_rate = 1.0
+        st.session_state.forex_date = ""
+    elif calc_usd_pressed:
+        st.session_state.calculated = True
+        st.session_state.calc_currency = "USD"
+        _live_rate = get_eur_usd_rate()
+        st.session_state.forex_rate = _live_rate
+        from datetime import date as _date
+        st.session_state.forex_date = _date.today().strftime("%Y-%m-%d")
 
     if st.session_state.get("calculated", False):
         with st.spinner("Computing DMC for all maintenance items..."):
@@ -1146,11 +1181,16 @@ elif st.session_state.page == "Setup & Calculate":
             results = calculate_dmc(get_aircraft_data(s["aircraft_type"], s.get("engine_program", "FMP")), s["fh_per_year"], s["fc_per_year"],
                 s["apu_hrs_per_year"], s["labour_rate"], s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"), hotel_hrs)
 
-            # D328eco with FMP: inject PWC FMP engine DMC as a fixed EUR/FH item
-            # The FMP rate already covers all engine maintenance; no environmental adjustment applied.
+            # D328eco with FMP: inject PWC FMP engine DMC as a fixed EUR/FH item.
+            # PWC rates are quoted for Benign environment (per PWC Sept 2023 document) —
+            # apply the same "Engines" category factor used for all other engine tasks.
             if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
                 avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
-                pwc_rate_2ea = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+                pwc_rate_2ea_base = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+                fmp_factor, _, _, _ = get_category_factor(
+                    "Engines", s.get("env_mix", {"Temperate": 100}),
+                    s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+                pwc_rate_2ea   = pwc_rate_2ea_base * fmp_factor
                 rate_per_engine = pwc_rate_2ea / _PWC_ENGINE_COUNT
 
                 if hotel_hrs > 0:
@@ -1171,7 +1211,7 @@ elif st.session_state.page == "Setup & Calculate":
                             "Occ/yr (Usage)":         0,
                             "Occ/yr (Used)":          0,
                             "Driver":                 "FMP Rate",
-                            "Adj. Factor":            1.0,
+                            "Adj. Factor":            round(fmp_factor, 4),
                             "DMC Labour (EUR/FH)":    0.0,
                             "DMC Material (EUR/FH)":  round(eng_rate, 4),
                             "DMC Total (EUR/FH)":     round(eng_rate, 4),
@@ -1188,7 +1228,7 @@ elif st.session_state.page == "Setup & Calculate":
                         "Occ/yr (Usage)":         0,
                         "Occ/yr (Used)":          0,
                         "Driver":                 "FMP Rate",
-                        "Adj. Factor":            1.0,
+                        "Adj. Factor":            round(fmp_factor, 4),
                         "DMC Labour (EUR/FH)":    0.0,
                         "DMC Material (EUR/FH)":  round(pwc_rate_2ea, 4),
                         "DMC Total (EUR/FH)":     round(pwc_rate_2ea, 4),
@@ -1197,33 +1237,56 @@ elif st.session_state.page == "Setup & Calculate":
             df = pd.DataFrame(results)
             st.session_state.calc_results = results
 
-        total_labour = df["DMC Labour (EUR/FH)"].sum()
-        total_material = df["DMC Material (EUR/FH)"].sum()
+            # Currency conversion — keep EUR internally, convert for display
+            curr = st.session_state.get("calc_currency", "EUR")
+            fx   = st.session_state.get("forex_rate", 1.0)
+            for _c in ["Material (EUR)", "DMC Labour (EUR/FH)", "DMC Material (EUR/FH)", "DMC Total (EUR/FH)"]:
+                df[_c] = df[_c] * fx
+            if curr == "USD":
+                df = df.rename(columns={
+                    "Material (EUR)":         "Material (USD)",
+                    "DMC Labour (EUR/FH)":    "DMC Labour (USD/FH)",
+                    "DMC Material (EUR/FH)":  "DMC Material (USD/FH)",
+                    "DMC Total (EUR/FH)":     "DMC Total (USD/FH)",
+                })
+            COL_MAT_RAW = f"Material ({curr})"
+            COL_LAB     = f"DMC Labour ({curr}/FH)"
+            COL_MTR     = f"DMC Material ({curr}/FH)"
+            COL_TOT     = f"DMC Total ({curr}/FH)"
+
+        total_labour   = df[COL_LAB].sum()
+        total_material = df[COL_MTR].sum()
         total_dmc = total_labour + total_material
 
         st.markdown("---")
+
+        # Forex note when displaying USD
+        if curr == "USD":
+            _fx_date = st.session_state.get("forex_date", "")
+            _fx_note = f" (as of {_fx_date})" if _fx_date else ""
+            st.markdown(f'<div class="info-box info-slate">Exchange rate: 1 EUR = {fx:.4f} USD{_fx_note} — all values converted from EUR base costs.</div>', unsafe_allow_html=True)
 
         # Result metrics with highlighted total
         st.markdown(f"""
         <div class="metrics">
             <div class="metric" style="border: 1px solid rgba(34,197,94,0.3); box-shadow: 0 4px 20px rgba(34,197,94,0.15);">
                 <div class="metric-label" style="color:#4ade80;">Total DMC</div>
-                <div class="metric-val" style="font-size:1.6rem;">EUR {total_dmc:,.2f}</div>
+                <div class="metric-val" style="font-size:1.6rem;">{curr} {total_dmc:,.2f}</div>
                 <div class="metric-unit">per Flight Hour</div>
             </div>
             <div class="metric">
                 <div class="metric-label">Labour DMC</div>
-                <div class="metric-val">EUR {total_labour:,.2f}</div>
+                <div class="metric-val">{curr} {total_labour:,.2f}</div>
                 <div class="metric-unit">per Flight Hour</div>
             </div>
             <div class="metric">
                 <div class="metric-label">Material DMC</div>
-                <div class="metric-val">EUR {total_material:,.2f}</div>
+                <div class="metric-val">{curr} {total_material:,.2f}</div>
                 <div class="metric-unit">per Flight Hour</div>
             </div>
             <div class="metric">
                 <div class="metric-label">Annual DMC</div>
-                <div class="metric-val">EUR {total_dmc * s["fh_per_year"]:,.0f}</div>
+                <div class="metric-val">{curr} {total_dmc * s["fh_per_year"]:,.0f}</div>
                 <div class="metric-unit">at {s["fh_per_year"]:,} FH/yr</div>
             </div>
         </div>
@@ -1249,14 +1312,14 @@ elif st.session_state.page == "Setup & Calculate":
         st.markdown(f'<div class="sec-head">{svg_icon("layers", 20)} <span>Category</span> Breakdown</div>', unsafe_allow_html=True)
 
         cat_sum = df.groupby("Category").agg({
-            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
+            COL_LAB: "sum", COL_MTR: "sum", COL_TOT: "sum"
         }).reset_index()
-        cat_sum = cat_sum.sort_values("DMC Total (EUR/FH)", ascending=False)
+        cat_sum = cat_sum.sort_values(COL_TOT, ascending=False)
 
         col_c1, col_c2 = st.columns(2)
         with col_c1:
             fig_pie = go.Figure(data=[go.Pie(
-                labels=cat_sum["Category"], values=cat_sum["DMC Total (EUR/FH)"].round(2),
+                labels=cat_sum["Category"], values=cat_sum[COL_TOT].round(2),
                 hole=0.5, marker=dict(colors=["#2563EB", "#0891B2", "#059669", "#D97706", "#7C3AED", "#DC2626", "#475569", "#EC4899", "#F59E0B"]),
                 textinfo="label+percent", textfont_size=10, textposition="outside",
             )])
@@ -1267,12 +1330,12 @@ elif st.session_state.page == "Setup & Calculate":
 
         with col_c2:
             fig_bar = go.Figure()
-            fig_bar.add_trace(go.Bar(name="Labour", x=cat_sum["Category"], y=cat_sum["DMC Labour (EUR/FH)"].round(2), marker_color="#2563EB"))
-            fig_bar.add_trace(go.Bar(name="Material", x=cat_sum["Category"], y=cat_sum["DMC Material (EUR/FH)"].round(2), marker_color="#22D3EE"))
-            fig_bar.update_layout(title=dict(text="Labour vs Material (EUR/FH)", font=dict(size=13, family="Plus Jakarta Sans")),
+            fig_bar.add_trace(go.Bar(name="Labour", x=cat_sum["Category"], y=cat_sum[COL_LAB].round(2), marker_color="#2563EB"))
+            fig_bar.add_trace(go.Bar(name="Material", x=cat_sum["Category"], y=cat_sum[COL_MTR].round(2), marker_color="#22D3EE"))
+            fig_bar.update_layout(title=dict(text=f"Labour vs Material ({curr}/FH)", font=dict(size=13, family="Plus Jakarta Sans")),
                 barmode="stack", height=420, margin=dict(t=50, b=100, l=50, r=20),
                 xaxis=dict(tickangle=-40, tickfont=dict(size=9)),
-                yaxis=dict(title=dict(text="EUR/FH", font=dict(size=11))),
+                yaxis=dict(title=dict(text=f"{curr}/FH", font=dict(size=11))),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig_bar, use_container_width=True)
@@ -1280,7 +1343,7 @@ elif st.session_state.page == "Setup & Calculate":
         # Category table
         st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>Category</span> Summary</div>', unsafe_allow_html=True)
         cat_disp = cat_sum.copy()
-        cat_disp["% of Total"] = (cat_disp["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+        cat_disp["% of Total"] = (cat_disp[COL_TOT] / total_dmc * 100).round(1)
 
         # Add per-category adjustment factors
         cat_factors_list = []
@@ -1290,8 +1353,8 @@ elif st.session_state.page == "Setup & Calculate":
         cat_disp["Adj. Factor"] = cat_factors_list
 
         st.dataframe(cat_disp.style.format({
-            "DMC Labour (EUR/FH)": "EUR {:.2f}", "DMC Material (EUR/FH)": "EUR {:.2f}",
-            "DMC Total (EUR/FH)": "EUR {:.2f}", "% of Total": "{:.1f}%", "Adj. Factor": "x{:.4f}"}),
+            COL_LAB: f"{curr} {{:.2f}}", COL_MTR: f"{curr} {{:.2f}}",
+            COL_TOT: f"{curr} {{:.2f}}", "% of Total": "{:.1f}%", "Adj. Factor": "x{:.4f}"}),
             use_container_width=True, hide_index=True)
 
         # Category factor breakdown
@@ -1322,9 +1385,9 @@ elif st.session_state.page == "Setup & Calculate":
         df_show = df if sel_cat == "All" else df[df["Category"] == sel_cat]
 
         st.dataframe(df_show.style.format({
-            "Material (EUR)": "EUR {:,.2f}", "Occ/yr (Cal)": "{:.4f}", "Occ/yr (Usage)": "{:.4f}",
-            "Occ/yr (Used)": "{:.4f}", "Adj. Factor": "{:.4f}", "DMC Labour (EUR/FH)": "EUR {:.4f}",
-            "DMC Material (EUR/FH)": "EUR {:.4f}", "DMC Total (EUR/FH)": "EUR {:.4f}"}),
+            COL_MAT_RAW: f"{curr} {{:,.2f}}", "Occ/yr (Cal)": "{:.4f}", "Occ/yr (Usage)": "{:.4f}",
+            "Occ/yr (Used)": "{:.4f}", "Adj. Factor": "{:.4f}", COL_LAB: f"{curr} {{:.4f}}",
+            COL_MTR: f"{curr} {{:.4f}}", COL_TOT: f"{curr} {{:.4f}}"}),
             use_container_width=True, hide_index=True, height=600)
 
 
@@ -1336,7 +1399,7 @@ elif st.session_state.page == "Setup & Calculate":
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
             <div style="font-size:1.1rem; font-weight:600; color:#64748B;">Ready to calculate</div>
-            <div style="font-size:0.85rem; margin-top:0.25rem;">Verify your parameters above, then press CALCULATE DMC</div>
+            <div style="font-size:0.85rem; margin-top:0.25rem;">Verify your parameters above, then press <b>CALCULATE DMC — EUR</b> or <b>CALCULATE DMC — USD</b></div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1373,7 +1436,10 @@ elif st.session_state.page == "Report":
 
     if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
         avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
-        pwc_rate_2ea = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+        pwc_rate_2ea_base = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
+        fmp_factor, _, _, _ = get_category_factor(
+            "Engines", env_mix, s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+        pwc_rate_2ea    = pwc_rate_2ea_base * fmp_factor
         rate_per_engine = pwc_rate_2ea / _PWC_ENGINE_COUNT
 
         if hotel_hrs > 0:
@@ -1393,7 +1459,7 @@ elif st.session_state.page == "Report":
                     "Occ/yr (Usage)":         0,
                     "Occ/yr (Used)":          0,
                     "Driver":                 "FMP Rate",
-                    "Adj. Factor":            1.0,
+                    "Adj. Factor":            round(fmp_factor, 4),
                     "DMC Labour (EUR/FH)":    0.0,
                     "DMC Material (EUR/FH)":  round(eng_rate, 4),
                     "DMC Total (EUR/FH)":     round(eng_rate, 4),
@@ -1410,7 +1476,7 @@ elif st.session_state.page == "Report":
                 "Occ/yr (Usage)":         0,
                 "Occ/yr (Used)":          0,
                 "Driver":                 "FMP Rate",
-                "Adj. Factor":            1.0,
+                "Adj. Factor":            round(fmp_factor, 4),
                 "DMC Labour (EUR/FH)":    0.0,
                 "DMC Material (EUR/FH)":  round(pwc_rate_2ea, 4),
                 "DMC Total (EUR/FH)":     round(pwc_rate_2ea, 4),
@@ -1418,21 +1484,43 @@ elif st.session_state.page == "Report":
 
     df = pd.DataFrame(results)
 
-    total_labour = df["DMC Labour (EUR/FH)"].sum()
-    total_material = df["DMC Material (EUR/FH)"].sum()
+    # Currency conversion (read from session state — set when Calculate button was pressed)
+    curr = st.session_state.get("calc_currency", "EUR")
+    fx   = st.session_state.get("forex_rate", 1.0)
+    for _c in ["Material (EUR)", "DMC Labour (EUR/FH)", "DMC Material (EUR/FH)", "DMC Total (EUR/FH)"]:
+        df[_c] = df[_c] * fx
+    if curr == "USD":
+        df = df.rename(columns={
+            "Material (EUR)":         "Material (USD)",
+            "DMC Labour (EUR/FH)":    "DMC Labour (USD/FH)",
+            "DMC Material (EUR/FH)":  "DMC Material (USD/FH)",
+            "DMC Total (EUR/FH)":     "DMC Total (USD/FH)",
+        })
+    COL_MAT_RAW = f"Material ({curr})"
+    COL_LAB     = f"DMC Labour ({curr}/FH)"
+    COL_MTR     = f"DMC Material ({curr}/FH)"
+    COL_TOT     = f"DMC Total ({curr}/FH)"
+
+    total_labour   = df[COL_LAB].sum()
+    total_material = df[COL_MTR].sum()
     total_dmc = total_labour + total_material
+
+    if curr == "USD":
+        _fx_date = st.session_state.get("forex_date", "")
+        _fx_note = f" (as of {_fx_date})" if _fx_date else ""
+        st.markdown(f'<div class="info-box info-slate">Exchange rate: 1 EUR = {fx:.4f} USD{_fx_note} — all values converted from EUR base costs.</div>', unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="metrics">
-        <div class="metric"><div class="metric-label">Total DMC</div><div class="metric-val">EUR {total_dmc:,.2f} /FH</div></div>
-        <div class="metric"><div class="metric-label">Labour</div><div class="metric-val">EUR {total_labour:,.2f} /FH</div></div>
-        <div class="metric"><div class="metric-label">Material</div><div class="metric-val">EUR {total_material:,.2f} /FH</div></div>
-        <div class="metric"><div class="metric-label">Annual</div><div class="metric-val">EUR {total_dmc * s['fh_per_year']:,.0f}</div></div>
+        <div class="metric"><div class="metric-label">Total DMC</div><div class="metric-val">{curr} {total_dmc:,.2f} /FH</div></div>
+        <div class="metric"><div class="metric-label">Labour</div><div class="metric-val">{curr} {total_labour:,.2f} /FH</div></div>
+        <div class="metric"><div class="metric-label">Material</div><div class="metric-val">{curr} {total_material:,.2f} /FH</div></div>
+        <div class="metric"><div class="metric-label">Annual</div><div class="metric-val">{curr} {total_dmc * s['fh_per_year']:,.0f}</div></div>
     </div>
     """, unsafe_allow_html=True)
 
     op_name = s["operator"].replace(" ", "_") if s["operator"] else "Generic"
-    base_filename = f"MaintEdge_DMC_{s['aircraft_type'].replace(' ', '_')}_{op_name}_{s['fh_per_year']}FH"
+    base_filename = f"MaintEdge_DMC_{s['aircraft_type'].replace(' ', '_')}_{op_name}_{s['fh_per_year']}FH_{curr}"
 
     # ── EXCEL EXPORT ──
     st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>Excel</span> Report</div>', unsafe_allow_html=True)
@@ -1486,6 +1574,8 @@ elif st.session_state.page == "Report":
         ws1.cell(row=row, column=1, value="OPERATIONAL PARAMETERS").font = blue_font
         row = 6
         _hotel = s.get("hotel_mode_hrs", 0)
+        _fx_date_xl = st.session_state.get("forex_date", "")
+        _fx_str_xl  = f"1 EUR = {fx:.4f} USD" + (f" (as of {_fx_date_xl})" if _fx_date_xl else "") if curr == "USD" else "N/A"
         param_data = [
             ("Aircraft Type", s["aircraft_type"]),
             ("Operator", s["operator"] or "N/A"),
@@ -1497,6 +1587,8 @@ elif st.session_state.page == "Report":
             ("Eng 2 Operating Hrs", f"{s['fh_per_year'] + _hotel:,}" if _hotel > 0 else f"{s['fh_per_year']:,} (same as FH)"),
             ("FH/FC Ratio", f"{s['fh_fc_ratio']:.2f}"),
             ("Labour Rate (EUR/hr)", f"{s['labour_rate']:.2f}"),
+            ("Output Currency", f"{curr}" + (f" ({_fx_str_xl})" if curr == "USD" else "")),
+            ("EUR/USD Rate", _fx_str_xl),
             ("Environment", active_envs_str),
             ("Blended Env Factor", f"x{blended_env:.3f}"),
             ("Gravel Operations", f"{s['gravel_pct']}% (x{gf:.2f})"),
@@ -1518,10 +1610,10 @@ elif st.session_state.page == "Report":
         unsched_xl = total_dmc * 0.40
         logistics_xl = total_dmc * 0.15
         total_all_in_xl = total_dmc + unsched_xl + logistics_xl
-        for label, val in [("Scheduled DMC (EUR/FH)", total_dmc), ("Labour DMC (EUR/FH)", total_labour),
-                           ("Material DMC (EUR/FH)", total_material), ("Annual Scheduled DMC (EUR)", total_dmc * s["fh_per_year"]),
+        for label, val in [(f"Scheduled DMC ({curr}/FH)", total_dmc), (f"Labour DMC ({curr}/FH)", total_labour),
+                           (f"Material DMC ({curr}/FH)", total_material), (f"Annual Scheduled DMC ({curr})", total_dmc * s["fh_per_year"]),
                            ("Unscheduled Maintenance (40%)", unsched_xl), ("Logistics & Customs (15%)", logistics_xl),
-                           ("All-In DMC Estimate (EUR/FH)", total_all_in_xl), ("All-In Annual (EUR)", total_all_in_xl * s["fh_per_year"])]:
+                           (f"All-In DMC Estimate ({curr}/FH)", total_all_in_xl), (f"All-In Annual ({curr})", total_all_in_xl * s["fh_per_year"])]:
             ws1.cell(row=row, column=1, value=label).font = bold_font
             cell = ws1.cell(row=row, column=3, value=round(val, 2))
             cell.font = Font(name="Arial", size=11, bold=True, color="2563EB")
@@ -1536,12 +1628,12 @@ elif st.session_state.page == "Report":
         # --- Sheet 2: Category Summary ---
         ws2 = wb.create_sheet("Category Summary")
         cat_sum = df.groupby("Category").agg({
-            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
+            COL_LAB: "sum", COL_MTR: "sum", COL_TOT: "sum"
         }).reset_index()
-        cat_sum = cat_sum.sort_values("DMC Total (EUR/FH)", ascending=False)
-        cat_sum["% of Total"] = (cat_sum["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+        cat_sum = cat_sum.sort_values(COL_TOT, ascending=False)
+        cat_sum["% of Total"] = (cat_sum[COL_TOT] / total_dmc * 100).round(1)
 
-        headers2 = ["Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "% of Total"]
+        headers2 = ["Category", f"Labour ({curr}/FH)", f"Material ({curr}/FH)", f"Total ({curr}/FH)", "% of Total"]
         for c, h in enumerate(headers2, 1):
             cell = ws2.cell(row=1, column=c, value=h)
             cell.font = white_font
@@ -1564,8 +1656,8 @@ elif st.session_state.page == "Report":
         # --- Sheet 3: Full Detail ---
         ws3 = wb.create_sheet("Detailed Breakdown")
         detail_cols = ["Category", "Inspection", "Interval 1", "Interval 2", "MH",
-                       "Material (EUR)", "Occ/yr (Used)", "Driver",
-                       "DMC Labour (EUR/FH)", "DMC Material (EUR/FH)", "DMC Total (EUR/FH)"]
+                       COL_MAT_RAW, "Occ/yr (Used)", "Driver",
+                       COL_LAB, COL_MTR, COL_TOT]
         for c, h in enumerate(detail_cols, 1):
             cell = ws3.cell(row=1, column=c, value=h)
             cell.font = white_font
@@ -1577,7 +1669,7 @@ elif st.session_state.page == "Report":
                 cell = ws3.cell(row=r_idx, column=c, value=val)
                 cell.font = normal_font
                 if isinstance(val, float):
-                    cell.number_format = '#,##0.0000' if "EUR/FH" in col_name else '#,##0.00'
+                    cell.number_format = '#,##0.0000' if "/FH" in col_name else '#,##0.00'
                 cell.alignment = Alignment(horizontal="center") if c > 2 else Alignment()
             if r_idx % 2 == 0:
                 for c in range(1, len(detail_cols) + 1):
@@ -1629,9 +1721,9 @@ elif st.session_state.page == "Report":
 
         # ── Chart data ───────────────────────────────────────────────
         cat_sum_pdf = df.groupby("Category").agg({
-            "DMC Labour (EUR/FH)": "sum", "DMC Material (EUR/FH)": "sum", "DMC Total (EUR/FH)": "sum"
-        }).reset_index().sort_values("DMC Total (EUR/FH)", ascending=False)
-        cat_sum_pdf["pct"] = (cat_sum_pdf["DMC Total (EUR/FH)"] / total_dmc * 100).round(1)
+            COL_LAB: "sum", COL_MTR: "sum", COL_TOT: "sum"
+        }).reset_index().sort_values(COL_TOT, ascending=False)
+        cat_sum_pdf["pct"] = (cat_sum_pdf[COL_TOT] / total_dmc * 100).round(1)
         CHART_COLORS = ["#2563EB","#0891B2","#059669","#D97706","#7C3AED",
                         "#DC2626","#475569","#EC4899","#F59E0B","#10B981","#6366F1"]
 
@@ -1647,7 +1739,7 @@ elif st.session_state.page == "Report":
         def _autopct(pct):
             return f"{pct:.1f}%" if pct >= 3 else ""
         wedges, _, autotexts = ax_pie.pie(
-            cat_sum_pdf["DMC Total (EUR/FH)"].round(2),
+            cat_sum_pdf[COL_TOT].round(2),
             labels=None,
             colors=wedge_colors,
             autopct=_autopct,
@@ -1675,14 +1767,14 @@ elif st.session_state.page == "Report":
         # Bar chart (stacked) using matplotlib
         fig_bar_mpl, ax_bar = plt.subplots(figsize=(8, 5))
         x = np.arange(len(cat_sum_pdf))
-        labour = cat_sum_pdf["DMC Labour (EUR/FH)"].round(2).values
-        material = cat_sum_pdf["DMC Material (EUR/FH)"].round(2).values
+        labour = cat_sum_pdf[COL_LAB].round(2).values
+        material = cat_sum_pdf[COL_MTR].round(2).values
         ax_bar.bar(x, labour, 0.6, label="Labour", color="#2563EB")
         ax_bar.bar(x, material, 0.6, bottom=labour, label="Material", color="#22D3EE")
         ax_bar.set_xticks(x)
         ax_bar.set_xticklabels(cat_sum_pdf["Category"], rotation=-40, ha="left", fontsize=8)
-        ax_bar.set_ylabel("EUR / FH", fontsize=10)
-        ax_bar.set_title("Labour vs Material by Category (EUR/FH)", fontsize=13, color="#1E293B", pad=15)
+        ax_bar.set_ylabel(f"{curr} / FH", fontsize=10)
+        ax_bar.set_title(f"Labour vs Material by Category ({curr}/FH)", fontsize=13, color="#1E293B", pad=15)
         ax_bar.legend(loc="upper right", fontsize=9)
         ax_bar.set_facecolor("#F8FAFC")
         ax_bar.grid(axis="y", color="#E2E8F0", linewidth=0.5)
@@ -1733,7 +1825,7 @@ elif st.session_state.page == "Report":
                 canvas.setFont("Helvetica", 6.5); canvas.setFillColor(CYAN_400)
                 canvas.drawCentredString(bx+25*mm, by+19*mm, "TOTAL DMC")
                 canvas.setFont("Helvetica-Bold", 15); canvas.setFillColor(WHITE)
-                canvas.drawCentredString(bx+25*mm, by+10*mm, f"EUR {total_dmc:,.2f}")
+                canvas.drawCentredString(bx+25*mm, by+10*mm, f"{curr} {total_dmc:,.2f}")
                 canvas.setFont("Helvetica", 7); canvas.setFillColor(SLATE_400)
                 canvas.drawCentredString(bx+25*mm, by+4*mm, "per Flight Hour")
                 canvas.setStrokeColor(SLATE_200); canvas.setLineWidth(0.5)
@@ -1774,6 +1866,9 @@ elif st.session_state.page == "Report":
         active_envs_display = ", ".join([f"{e.split('/')[0].strip()} {p}%" for e, p in s.get("env_mix", {}).items() if p > 0])
 
         # ── EXECUTIVE SUMMARY (KeepTogether: heading + hr + first paragraph) ──
+        _fx_date_pdf = st.session_state.get("forex_date", "")
+        _fx_note_pdf = (f" All values converted from EUR base costs at 1 EUR = {fx:.4f} USD"
+                        + (f" (as of {_fx_date_pdf})." if _fx_date_pdf else ".")) if curr == "USD" else ""
         story.append(KeepTogether([
             Paragraph("Executive Summary", SH), hr(),
             Paragraph(
@@ -1782,16 +1877,17 @@ elif st.session_state.page == "Report":
                 f"<b>{s['operator'] or 'N/A'}</b> based in <b>{s['base_country'] or 'N/A'}</b>. "
                 f"The analysis is based on an annual utilization of <b>{s['fh_per_year']:,} flight hours</b> and "
                 f"<b>{s['fc_per_year']:,} flight cycles</b>, with a labour rate of <b>EUR {s['labour_rate']:.2f}/hr</b>."
-                + (f" Hotel Mode is active at <b>{_hotel_pdf:,} hrs/yr</b>, increasing Engine 2 total operating hours to <b>{s['fh_per_year'] + _hotel_pdf:,}</b>." if _hotel_pdf > 0 else ""),
+                + (f" Hotel Mode is active at <b>{_hotel_pdf:,} hrs/yr</b>, increasing Engine 2 total operating hours to <b>{s['fh_per_year'] + _hotel_pdf:,}</b>." if _hotel_pdf > 0 else "")
+                + _fx_note_pdf,
                 B9),
         ]))
         story.append(Paragraph(
-            f"The computed <b>scheduled DMC is EUR {total_dmc:,.2f} per flight hour</b> "
-            f"(EUR {total_dmc * s['fh_per_year']:,.0f} per year), comprising EUR {total_labour:,.2f}/FH labour "
-            f"({labour_pct_val:.0f}%) and EUR {total_material:,.2f}/FH material ({material_pct_val:.0f}%). "
+            f"The computed <b>scheduled DMC is {curr} {total_dmc:,.2f} per flight hour</b> "
+            f"({curr} {total_dmc * s['fh_per_year']:,.0f} per year), comprising {curr} {total_labour:,.2f}/FH labour "
+            f"({labour_pct_val:.0f}%) and {curr} {total_material:,.2f}/FH material ({material_pct_val:.0f}%). "
             f"Including estimated unscheduled maintenance (40%) and logistics costs (15%), the "
-            f"<b>all-in DMC estimate is EUR {total_all_in:,.2f} per flight hour</b> "
-            f"(EUR {total_all_in * s['fh_per_year']:,.0f} per year).",
+            f"<b>all-in DMC estimate is {curr} {total_all_in:,.2f} per flight hour</b> "
+            f"({curr} {total_all_in * s['fh_per_year']:,.0f} per year).",
             B9))
 
         # Top 3 cost drivers
@@ -1815,9 +1911,9 @@ elif st.session_state.page == "Report":
             fontSize=6.5, textColor=SLATE_400, leading=8, alignment=TA_CENTER))
 
         metrics_tbl = Table([
-            [_lbl("TOTAL DMC", CYAN_400),      _lbl("Labour DMC", SLATE_600),           _lbl("Material DMC", SLATE_600),         _lbl("All-In Estimate", SLATE_600)],
-            [_val(f"EUR {total_dmc:,.2f}", WHITE, 12), _val(f"EUR {total_labour:,.2f}", BRAND_BLUE, 10), _val(f"EUR {total_material:,.2f}", BRAND_BLUE, 10), _val(f"EUR {total_all_in:,.2f}", BRAND_BLUE, 10)],
-            [_sub("per Flight Hour"),           _sub("per Flight Hour"),                 _sub("per Flight Hour"),                 _sub("incl. 40% + 15%")],
+            [_lbl("TOTAL DMC", CYAN_400),                       _lbl("Labour DMC", SLATE_600),                          _lbl("Material DMC", SLATE_600),                        _lbl("All-In Estimate", SLATE_600)],
+            [_val(f"{curr} {total_dmc:,.2f}", WHITE, 12),       _val(f"{curr} {total_labour:,.2f}", BRAND_BLUE, 10),    _val(f"{curr} {total_material:,.2f}", BRAND_BLUE, 10),   _val(f"{curr} {total_all_in:,.2f}", BRAND_BLUE, 10)],
+            [_sub("per Flight Hour"),                            _sub("per Flight Hour"),                                _sub("per Flight Hour"),                                _sub("incl. 40% + 15%")],
         ], colWidths=[47*mm, 43*mm, 43*mm, 43*mm])
         metrics_tbl.setStyle(TableStyle([
             # First column: dark navy background + green border
@@ -1836,6 +1932,7 @@ elif st.session_state.page == "Report":
         story.append(sp(4))
 
         # ── 1. PARAMETERS ──
+        _fx_row = [f"Output Currency", f"{curr}", "EUR/USD Rate", f"1 EUR = {fx:.4f} USD" + (f" ({_fx_date_pdf})" if _fx_date_pdf else "")] if curr == "USD" else ["Output Currency", "EUR", "EUR/USD Rate", "N/A"]
         param_rows = [
             ["Parameter", "Value", "Parameter", "Value"],
             ["Aircraft", s["aircraft_type"], "MOD Variant", mod_str],
@@ -1846,6 +1943,7 @@ elif st.session_state.page == "Report":
             ["Hotel Mode Hrs", f"{_hotel_pdf:,}" if _hotel_pdf > 0 else "Off", "Eng 2 Total Hrs", f"{s['fh_per_year'] + _hotel_pdf:,}" if _hotel_pdf > 0 else "= FH"],
             ["Gravel Ops", f"{s['gravel_pct']}%", "STOL Ops", f"{s['stol_pct']}%"],
             ["Engine Program", s.get("engine_program", "N/A") if "eco" in s["aircraft_type"].lower() else "N/A", "", ""],
+            _fx_row,
         ]
         pt = Table(param_rows, colWidths=[32*mm, 48*mm, 32*mm, 48*mm])
         pt.setStyle(TableStyle([
@@ -1862,7 +1960,7 @@ elif st.session_state.page == "Report":
 
         # ── 2. DMC SUMMARY ──
         sum_rows = [
-            ["Component", "EUR / FH", "EUR / Year", "%"],
+            ["Component", f"{curr} / FH", f"{curr} / Year", "%"],
             ["Scheduled DMC", f"{total_dmc:,.2f}", f"{total_dmc * s['fh_per_year']:,.0f}", "100%"],
             ["  Labour", f"{total_labour:,.2f}", f"{total_labour * s['fh_per_year']:,.0f}", f"{labour_pct_val:.0f}%"],
             ["  Material", f"{total_material:,.2f}", f"{total_material * s['fh_per_year']:,.0f}", f"{material_pct_val:.0f}%"],
@@ -1894,10 +1992,10 @@ elif st.session_state.page == "Report":
         story.append(sp(3))
 
         # Category summary table
-        cat_rows = [["#", "Category", "Labour (EUR/FH)", "Material (EUR/FH)", "Total (EUR/FH)", "%"]]
+        cat_rows = [["#", "Category", f"Labour ({curr}/FH)", f"Material ({curr}/FH)", f"Total ({curr}/FH)", "%"]]
         for idx, (_, r) in enumerate(cat_sum_pdf.iterrows(), 1):
-            cat_rows.append([str(idx), r["Category"], f"{r['DMC Labour (EUR/FH)']:.2f}",
-                f"{r['DMC Material (EUR/FH)']:.2f}", f"{r['DMC Total (EUR/FH)']:.2f}", f"{r['pct']:.1f}%"])
+            cat_rows.append([str(idx), r["Category"], f"{r[COL_LAB]:.2f}",
+                f"{r[COL_MTR]:.2f}", f"{r[COL_TOT]:.2f}", f"{r['pct']:.1f}%"])
         ct = Table(cat_rows, colWidths=[8*mm, 60*mm, 28*mm, 28*mm, 28*mm, 16*mm])
         ct.setStyle(TableStyle([
             ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,-1),8),
@@ -1913,7 +2011,7 @@ elif st.session_state.page == "Report":
 
         # ── 4. DETAILED BREAKDOWN ──
         # All cells wrapped in Paragraph objects so long text wraps properly (fixes PWC row overflow)
-        det_col_hdrs = ["Inspection", "Category", "Int 1", "Int 2", "MH", "Mat (EUR)", "Occ/yr", "Adj.F", "EUR/FH"]
+        det_col_hdrs = ["Inspection", "Category", "Int 1", "Int 2", "MH", f"Mat ({curr})", "Occ/yr", "Adj.F", f"{curr}/FH"]
         det_col_w    = [40*mm, 20*mm, 16*mm, 16*mm, 10*mm, 20*mm, 14*mm, 11*mm, 21*mm]  # total = 168mm
         det_rows = [[Paragraph(h, CSH) for h in det_col_hdrs]]
         for _, r in df.iterrows():
@@ -1924,15 +2022,15 @@ elif st.session_state.page == "Report":
                 .replace("Time Controlled ",       "TC ")
                 .replace("Engines (PWC FMP)",      "Engines\n(PWC FMP)"))
             det_rows.append([
-                Paragraph(r["Inspection"],               CS),
-                Paragraph(cat_short,                     CS),
-                Paragraph(str(r["Interval 1"]),          CS),
-                Paragraph(str(r["Interval 2"]),          CS),
-                Paragraph(str(r["MH"]),                  CS),
-                Paragraph(f"{r['Material (EUR)']:,.0f}", CS),
-                Paragraph(f"{r['Occ/yr (Used)']:.3f}",  CS),
-                Paragraph(f"{r['Adj. Factor']:.3f}",     CS),
-                Paragraph(f"{r['DMC Total (EUR/FH)']:.4f}", CS),
+                Paragraph(r["Inspection"],                  CS),
+                Paragraph(cat_short,                        CS),
+                Paragraph(str(r["Interval 1"]),             CS),
+                Paragraph(str(r["Interval 2"]),             CS),
+                Paragraph(str(r["MH"]),                     CS),
+                Paragraph(f"{r[COL_MAT_RAW]:,.0f}",        CS),
+                Paragraph(f"{r['Occ/yr (Used)']:.3f}",     CS),
+                Paragraph(f"{r['Adj. Factor']:.3f}",        CS),
+                Paragraph(f"{r[COL_TOT]:.4f}",             CS),
             ])
         dt = Table(det_rows, colWidths=det_col_w, repeatRows=1)
         dt.setStyle(TableStyle([
@@ -1957,7 +2055,7 @@ elif st.session_state.page == "Report":
         story.append(Paragraph("1. This report is generated by MaintEdge v1.0 by Deutsche Aircraft GmbH. All cost figures are estimates based on the OEM maintenance programme, assumed utilization profiles, and engineering-derived adjustment factors. Actual costs may vary depending on operator practices, MRO capabilities, and regulatory requirements.", disc))
         story.append(Paragraph("2. Unscheduled maintenance (40%) and logistics (15%) are industry benchmarks for regional turboprops and should be validated against operator experience.", disc))
         story.append(Paragraph("3. Environmental and operational factors are category-specific, based on engineering judgement and published industry data. Users should apply professional judgement for contractual or financial planning.", disc))
-        story.append(Paragraph("4. Material costs reflect current OEM pricing, subject to escalation, discount agreements, and exchange rate fluctuations. Labour rates are user-defined.", disc))
+        story.append(Paragraph("4. Material costs reflect current OEM pricing, subject to escalation, discount agreements, and exchange rate fluctuations. Labour rates are user-defined." + (f" USD values in this report use a EUR/USD rate of {fx:.4f}" + (f" fetched on {_fx_date_pdf}." if _fx_date_pdf else ".") if curr == "USD" else ""), disc))
         story.append(Paragraph("5. This document does not constitute a binding cost commitment or warranty by Deutsche Aircraft GmbH.", disc))
         story.append(sp(2))
         story.append(Paragraph("MaintEdge by Deutsche Aircraft GmbH  |  Confidential  |  For authorized use only",
@@ -1990,11 +2088,12 @@ elif st.session_state.page == "Report":
     st.markdown(f'<div class="sec-head">{svg_icon("settings", 20)} <span>Report</span> Parameters</div>', unsafe_allow_html=True)
 
     _hotel_rpt = s.get("hotel_mode_hrs", 0)
+    _fx_date_rpt = st.session_state.get("forex_date", "")
     params = {
         "Parameter": [
             "Aircraft Type", "MOD Variant", "Operator", "Base Country", "FH/Year", "FC/Year",
             "APU Hrs/Year", "Hotel Mode Hrs/Year", "Eng 2 Operating Hrs/Year",
-            "FH/FC Ratio", "Labour Rate", "Environment Mix",
+            "FH/FC Ratio", "Labour Rate", "Output Currency", "EUR/USD Rate", "Environment Mix",
             "Blended Env Factor", "Gravel %", "Gravel Factor", "STOL %", "STOL Factor",
             "Factors", "Category-Specific",
         ],
@@ -2003,7 +2102,10 @@ elif st.session_state.page == "Report":
             f"{s['fh_per_year']:,}", f"{s['fc_per_year']:,}", f"{s['apu_hrs_per_year']:,}",
             f"{_hotel_rpt:,}" if _hotel_rpt > 0 else "0 (off)",
             f"{s['fh_per_year'] + _hotel_rpt:,}" if _hotel_rpt > 0 else f"{s['fh_per_year']:,} (same as FH)",
-            f"{s['fh_fc_ratio']:.2f}", f"EUR {s['labour_rate']:.2f}/hr", active_envs_str,
+            f"{s['fh_fc_ratio']:.2f}", f"EUR {s['labour_rate']:.2f}/hr",
+            curr,
+            f"1 EUR = {fx:.4f} USD" + (f" (as of {_fx_date_rpt})" if _fx_date_rpt else "") if curr == "USD" else "N/A",
+            active_envs_str,
             f"x{blended_env:.3f}", f"{s['gravel_pct']}%", f"x{gf:.2f}", f"{s['stol_pct']}%", f"x{sf:.2f}",
             "Env x Gravel x STOL", "Weighted per category (see Calculate page)",
         ],
