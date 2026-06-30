@@ -190,7 +190,7 @@ D328_300_JET_DATA = [
 # DO 328eco MAINTENANCE DATA
 # Engine: PW127XT-S x2 via PWC FMP (pay-per-hour) -- NO APU
 # Propeller: 8,000 FH / 84 months | LG overhaul: $530,000
-# Source: DMC calculation D328eco.xlsx + PWC FMP PDF (Sept 2023)
+# Source: DMC calculation D328eco.xlsx + CM PW127XT-S 0256-26 (P&WC, May 2026)
 # ----------------------------------------------------------------
 D328_ECO_DATA = [
     # Airframe Checks
@@ -258,42 +258,39 @@ D328_ECO_DATA = [
     {"inspection": "Brakes (4EA)",          "int1": None, "param1": None,     "int2": 3000, "param2": "FC", "mh": 8,   "mat": 80000.00,   "category": "Landing Gear"},
     {"inspection": "NLG Tires (2EA)",       "int1": None, "param1": None,     "int2": 250,  "param2": "FC", "mh": 4,   "mat": 1746.72,    "category": "Landing Gear"},
     {"inspection": "MLG Tires (4EA)",       "int1": None, "param1": None,     "int2": 150,  "param2": "FC", "mh": 16,  "mat": 7600.00,    "category": "Landing Gear"},
-    # Engine Life Limited Parts -- hard-times, always applicable regardless of FMP program
-    {"inspection": "LLP HPT Blades Discard (2EA)", "int1": None, "param1": None, "int2": 15000, "param2": "FC", "mh": 160, "mat": 240000.00, "category": "Engines"},
 ]
 
 # ----------------------------------------------------------------
 # PWC FMP ENGINE DMC -- PW127XT-S (D328eco)
-# Source: "2023 09 DMC D328eco PW127XT-S (002) 2.pdf" (Pratt & Whitney Canada)
+# Source: CM PW127XT-S 0256-26 / Att_4_1 "PW127XT-S DMC 2026" (Pratt & Whitney Canada, May 2026)
 # IMPORTANT: PWC FMP rates are quoted PER ENGINE (industry standard).
 # The D328eco has 2 x PW127XT-S engines, so the per-aircraft rate = 2 x table value.
 # Services covered per engine: overhaul incl. shop labour & parts, HSI, LLP
 #   replacement, engine BUR, SB cat 1-6, DPHM/ECTM, FAST connectivity
 #   (incl. propeller balance monitoring, aircraft data services, engine data),
 #   fuel nozzle refurbishment. NOTE: propeller overhaul is a separate line item.
-# Escalation: 3.5% p.a. compound from Sept 2023 to March 2026 = 2.5 years
+# Rates are in $2026 USD (benign environment, first overhaul cycle).
 # USD to EUR conversion: 0.92 EUR/USD
 # ----------------------------------------------------------------
 _PWC_FMP_TABLE = [
-    # (avg flight duration in minutes, USD/FH per SINGLE engine in $2023)
-    (23,  243),
-    (34,  193),
-    (44,  164),
-    (55,  146),
-    (65,  135),
-    (86,  135),
+    # (avg flight duration in minutes, USD/FH per SINGLE engine in $2026)
+    (23,  281),
+    (34,  224),
+    (44,  189),
+    (55,  171),
+    (65,  158),
+    (86,  156),
 ]
-_PWC_ESCALATION_FACTOR = (1.035 ** 2.5)   # 3.5%/yr x 2.5 yrs = ~1.0899
 _PWC_USD_TO_EUR = 0.92                     # USD to EUR
 _PWC_ENGINE_COUNT = 2                      # D328eco has 2 engines
 
 
 def get_pwc_engine_rate_eur(fh_per_year, fc_per_year):
     """
-    Return the escalated EUR/FH engine DMC for PW127XT-S x2 (both engines) via PWC FMP.
+    Return the EUR/FH engine DMC for PW127XT-S x2 (both engines) via PWC FMP.
     PWC rates are per single engine; multiplied by 2 for both engines per aircraft.
     Interpolates from the PWC pay-per-hour table based on average flight duration.
-    Prices from PWC PDF (Sept 2023) escalated to March 2026 at 3.5%/yr, USD->EUR at 0.92.
+    Prices from CM PW127XT-S 0256-26 (May 2026), already in $2026 USD, converted to EUR at 0.92.
     """
     if fc_per_year <= 0:
         return 0.0
@@ -301,21 +298,53 @@ def get_pwc_engine_rate_eur(fh_per_year, fc_per_year):
 
     table = _PWC_FMP_TABLE
     if avg_min <= table[0][0]:
-        rate_usd_2023 = table[0][1]
+        rate_usd_2026 = table[0][1]
     elif avg_min >= table[-1][0]:
-        rate_usd_2023 = table[-1][1]
+        rate_usd_2026 = table[-1][1]
     else:
-        rate_usd_2023 = table[0][1]
+        rate_usd_2026 = table[0][1]
         for i in range(len(table) - 1):
             x0, x1 = table[i][0], table[i + 1][0]
             y0, y1 = table[i][1], table[i + 1][1]
             if x0 <= avg_min <= x1:
                 frac = (avg_min - x0) / (x1 - x0)
-                rate_usd_2023 = y0 + frac * (y1 - y0)
+                rate_usd_2026 = y0 + frac * (y1 - y0)
                 break
 
-    # Per engine rate escalated and converted, then x2 for both engines
-    return rate_usd_2023 * _PWC_USD_TO_EUR * _PWC_ESCALATION_FACTOR * _PWC_ENGINE_COUNT
+    # Per engine rate converted to EUR, then x2 for both engines
+    return rate_usd_2026 * _PWC_USD_TO_EUR * _PWC_ENGINE_COUNT
+
+
+def get_pwc_fmp_factor(env_mix, gravel_pct, mod_variant="MOD 10"):
+    """
+    PWC FMP environment/operational adjustment factor, calibrated to PW127XT-S DMC 2026 benchmarks.
+    Benign (Temperate) = 1.00. Single adverse environment (salt/sand/volcanic/industrial): up to 1.25.
+    Combined adverse environments naturally exceed 1.25 via blending — matches PWC case-by-case logic.
+    STOL is excluded: cycle effects are already implicit in the per-FH FMP rate.
+    """
+    OPS_ENVS = ["Temperate", "Tropical / Humid", "Arid / Desert", "Coastal / Marine", "Cold / Arctic"]
+    ops_total = sum(env_mix.get(e, 0) for e in OPS_ENVS)
+
+    if ops_total > 0:
+        blended = sum(
+            PWC_FMP_ENV_FACTORS[e] * env_mix.get(e, 0) / ops_total
+            for e in OPS_ENVS
+        )
+    else:
+        blended = 1.0
+
+    # High Altitude (volcanic ash): independent proportional adder
+    ha_pct = env_mix.get("High Altitude", 0)
+    if ha_pct > 0:
+        blended += (PWC_FMP_ENV_FACTORS["High Altitude"] - 1.0) * (ha_pct / 100)
+
+    # Gravel runways: debris/dust ingestion risk to compressor & hot section
+    gravel_applied = 1.0 + (gravel_pct / 100) * 0.15 * 0.6
+
+    # MOD variant (different engine rating affects maintenance cost)
+    mod_factor = MOD_FACTORS.get(mod_variant, {}).get("Engines", 1.0)
+
+    return blended * gravel_applied * mod_factor
 
 
 def get_aircraft_data(aircraft_type, engine_program="FMP"):
@@ -865,6 +894,25 @@ ENVIRONMENT_FACTORS = {
     "Coastal / Marine": 1.10, "Cold / Arctic": 1.06, "High Altitude": 1.04,
 }
 
+# PWC FMP-specific environment factors, calibrated to the PWC PW127XT-S DMC 2026 benchmark.
+# PWC states: benign (Temperate) = 1.00 baseline; a single adverse environment (salt, sand,
+# volcanic, or industrial pollution) increases the FMP rate by UP TO 25%. Combined adverse
+# environments may exceed +25% and are supplied case-by-case by PWC.
+# Analytical derivation per environment:
+#   Arid/Desert  (sand)              → compressor/turbine blade erosion, nozzle clogging   → 1.22
+#   Coastal/Marine (salt)            → Type I/II hot corrosion on HPT/LPT blades & vanes   → 1.20
+#   High Altitude (volcanic ash)     → extreme abrasive erosion — worst single environment  → 1.25
+#   Tropical/Humid (industrial poll) → sulfur/chemical hot corrosion, combustor fouling     → 1.13
+#   Cold/Arctic                      → cold starts, thermal cycling, seal & oil wear        → 1.08
+PWC_FMP_ENV_FACTORS = {
+    "Temperate":        1.00,
+    "Tropical / Humid": 1.13,
+    "Arid / Desert":    1.22,
+    "Coastal / Marine": 1.20,
+    "Cold / Arctic":    1.08,
+    "High Altitude":    1.25,
+}
+
 
 # ----------------------------------------------------------------
 # SIDEBAR
@@ -1003,6 +1051,8 @@ elif st.session_state.page == "Setup & Calculate":
         st.markdown(f'<div class="s-card"><div class="s-card-t">{svg_icon("plane", 18)} Aircraft & Operator</div></div>', unsafe_allow_html=True)
         aircraft_type = st.selectbox("Aircraft Type", list(AIRCRAFT_TYPES.keys()),
             index=list(AIRCRAFT_TYPES.keys()).index(s["aircraft_type"]))
+        if aircraft_type != s["aircraft_type"]:
+            st.session_state.calculated = False
         s["aircraft_type"] = aircraft_type
         ac = AIRCRAFT_TYPES[aircraft_type]
 
@@ -1182,14 +1232,14 @@ elif st.session_state.page == "Setup & Calculate":
                 s["apu_hrs_per_year"], s["labour_rate"], s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"), hotel_hrs)
 
             # D328eco with FMP: inject PWC FMP engine DMC as a fixed EUR/FH item.
-            # PWC rates are quoted for Benign environment (per PWC Sept 2023 document) —
-            # apply the same "Engines" category factor used for all other engine tasks.
+            # PWC rates are quoted for benign (Temperate) environment per CM PW127XT-S 0256-26.
+            # Apply PWC-calibrated FMP factor (up to +25% for a single adverse environment).
             if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
                 avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
                 pwc_rate_2ea_base = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
-                fmp_factor, _, _, _ = get_category_factor(
-                    "Engines", s.get("env_mix", {"Temperate": 100}),
-                    s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+                fmp_factor = get_pwc_fmp_factor(
+                    s.get("env_mix", {"Temperate": 100}),
+                    s["gravel_pct"], s.get("mod_variant", "MOD 10"))
                 pwc_rate_2ea   = pwc_rate_2ea_base * fmp_factor
                 rate_per_engine = pwc_rate_2ea / _PWC_ENGINE_COUNT
 
@@ -1202,7 +1252,7 @@ elif st.session_state.page == "Setup & Calculate":
                     ]:
                         results.append({
                             "Category":               "Engines (PWC FMP)",
-                            "Inspection":             f"PW127XT-S FMP -- Eng {eng_num} (1EA){eng_note} (avg {avg_min_disp} min/flt, $2023 esc.)",
+                            "Inspection":             f"PW127XT-S FMP -- Eng {eng_num} (1EA){eng_note} (avg {avg_min_disp} min/flt, $2026)",
                             "Interval 1":             "Pay-per-hour",
                             "Interval 2":             "Pay-per-hour",
                             "MH":                     0,
@@ -1219,7 +1269,7 @@ elif st.session_state.page == "Setup & Calculate":
                 else:
                     results.append({
                         "Category":               "Engines (PWC FMP)",
-                        "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
+                        "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2026)",
                         "Interval 1":             "Pay-per-hour",
                         "Interval 2":             "Pay-per-hour",
                         "MH":                     0,
@@ -1346,9 +1396,13 @@ elif st.session_state.page == "Setup & Calculate":
         cat_disp["% of Total"] = (cat_disp[COL_TOT] / total_dmc * 100).round(1)
 
         # Add per-category adjustment factors
+        _is_eco_fmp = "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP"
         cat_factors_list = []
         for cat_name in cat_disp["Category"]:
-            cf, _, _, _ = get_category_factor(cat_name, s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+            if _is_eco_fmp and cat_name == "Engines (PWC FMP)":
+                cf = get_pwc_fmp_factor(s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s.get("mod_variant", "MOD 10"))
+            else:
+                cf, _, _, _ = get_category_factor(cat_name, s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
             cat_factors_list.append(round(cf, 4))
         cat_disp["Adj. Factor"] = cat_factors_list
 
@@ -1359,19 +1413,42 @@ elif st.session_state.page == "Setup & Calculate":
 
         # Category factor breakdown
         st.markdown(f'<div class="sec-head">{svg_icon("target", 20)} <span>Category-Specific</span> Adjustment Factors</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="info-box info-blue">Factors are weighted per category. For example, tropical humidity affects Corrosion Prevention tasks more heavily than engine tasks.</div>', unsafe_allow_html=True)
+        if _is_eco_fmp:
+            st.markdown('<div class="info-box info-blue">Factors are weighted per category. <strong>Engines (PWC FMP)</strong> uses a dedicated PWC-calibrated factor: Temperate = ×1.00 baseline; single adverse environment up to ×1.25 (per CMO 0256-26). STOL is excluded from the FMP factor — cycle effects are implicit in the per-FH rate.</div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="info-box info-blue">Factors are weighted per category. For example, tropical humidity affects Corrosion Prevention tasks more heavily than engine tasks.</div>', unsafe_allow_html=True)
 
         factor_rows = []
         all_cats = sorted(df["Category"].unique().tolist())
         for cat_name in all_cats:
-            cf, ef_cat, gf_cat, sf_cat = get_category_factor(cat_name, s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
-            factor_rows.append({
-                "Category": cat_name,
-                "Env Factor": round(ef_cat, 4),
-                "Gravel Factor": round(gf_cat, 4),
-                "STOL Factor": round(sf_cat, 4),
-                "Combined": round(cf, 4),
-            })
+            if _is_eco_fmp and cat_name == "Engines (PWC FMP)":
+                # Decompose FMP factor into env, gravel, STOL components for display
+                _em = s.get("env_mix", {"Temperate": 100})
+                _OPS = ["Temperate", "Tropical / Humid", "Arid / Desert", "Coastal / Marine", "Cold / Arctic"]
+                _tot = sum(_em.get(e, 0) for e in _OPS)
+                ef_fmp = sum(PWC_FMP_ENV_FACTORS[e] * _em.get(e, 0) / _tot for e in _OPS) if _tot > 0 else 1.0
+                _ha = _em.get("High Altitude", 0)
+                if _ha > 0:
+                    ef_fmp += (PWC_FMP_ENV_FACTORS["High Altitude"] - 1.0) * (_ha / 100)
+                gf_fmp = 1.0 + (s["gravel_pct"] / 100) * 0.15 * 0.6
+                mod_f  = MOD_FACTORS.get(s.get("mod_variant", "MOD 10"), {}).get("Engines", 1.0)
+                cf_fmp = ef_fmp * gf_fmp * mod_f
+                factor_rows.append({
+                    "Category": cat_name,
+                    "Env Factor": round(ef_fmp, 4),
+                    "Gravel Factor": round(gf_fmp, 4),
+                    "STOL Factor": 1.0,
+                    "Combined": round(cf_fmp, 4),
+                })
+            else:
+                cf, ef_cat, gf_cat, sf_cat = get_category_factor(cat_name, s.get("env_mix", {"Temperate": 100}), s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+                factor_rows.append({
+                    "Category": cat_name,
+                    "Env Factor": round(ef_cat, 4),
+                    "Gravel Factor": round(gf_cat, 4),
+                    "STOL Factor": round(sf_cat, 4),
+                    "Combined": round(cf, 4),
+                })
         factor_df = pd.DataFrame(factor_rows)
         st.dataframe(factor_df.style.format({
             "Env Factor": "x{:.4f}", "Gravel Factor": "x{:.4f}",
@@ -1381,7 +1458,7 @@ elif st.session_state.page == "Setup & Calculate":
         # Detail table
         st.markdown(f'<div class="sec-head">{svg_icon("search", 20)} <span>Detailed</span> Item Breakdown</div>', unsafe_allow_html=True)
         categories = ["All"] + sorted(df["Category"].unique().tolist())
-        sel_cat = st.selectbox("Filter by Category", categories)
+        sel_cat = st.selectbox("Filter by Category", categories, key=f"filter_cat_{s['aircraft_type']}")
         df_show = df if sel_cat == "All" else df[df["Category"] == sel_cat]
 
         st.dataframe(df_show.style.format({
@@ -1437,8 +1514,8 @@ elif st.session_state.page == "Report":
     if "eco" in s["aircraft_type"].lower() and s.get("engine_program", "FMP") == "FMP":
         avg_min_disp = round((s["fh_per_year"] / s["fc_per_year"]) * 60, 1) if s["fc_per_year"] > 0 else 0
         pwc_rate_2ea_base = get_pwc_engine_rate_eur(s["fh_per_year"], s["fc_per_year"])
-        fmp_factor, _, _, _ = get_category_factor(
-            "Engines", env_mix, s["gravel_pct"], s["stol_pct"], s.get("mod_variant", "MOD 10"))
+        fmp_factor = get_pwc_fmp_factor(
+            env_mix, s["gravel_pct"], s.get("mod_variant", "MOD 10"))
         pwc_rate_2ea    = pwc_rate_2ea_base * fmp_factor
         rate_per_engine = pwc_rate_2ea / _PWC_ENGINE_COUNT
 
@@ -1450,7 +1527,7 @@ elif st.session_state.page == "Report":
             ]:
                 results.append({
                     "Category":               "Engines (PWC FMP)",
-                    "Inspection":             f"PW127XT-S FMP -- Eng {eng_num} (1EA){eng_note} (avg {avg_min_disp} min/flt, $2023 esc.)",
+                    "Inspection":             f"PW127XT-S FMP -- Eng {eng_num} (1EA){eng_note} (avg {avg_min_disp} min/flt, $2026)",
                     "Interval 1":             "Pay-per-hour",
                     "Interval 2":             "Pay-per-hour",
                     "MH":                     0,
@@ -1467,7 +1544,7 @@ elif st.session_state.page == "Report":
         else:
             results.append({
                 "Category":               "Engines (PWC FMP)",
-                "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2023 escalated)",
+                "Inspection":             f"PW127XT-S FMP -- 2EA (avg {avg_min_disp} min/flight, $2026)",
                 "Interval 1":             "Pay-per-hour",
                 "Interval 2":             "Pay-per-hour",
                 "MH":                     0,
