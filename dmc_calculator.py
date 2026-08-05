@@ -1139,14 +1139,14 @@ elif st.session_state.page == "Setup & Calculate":
     with col_btn2:
         calc_eur_pressed = st.button(
             "CALCULATE DMC — EUR",
-            use_container_width=True,
+            width="stretch",
             type="primary",
             help="Compute and display all DMC values in Euro (EUR).",
         )
     with col_btn4:
         calc_usd_pressed = st.button(
             "CALCULATE DMC — USD",
-            use_container_width=True,
+            width="stretch",
             type="primary",
             help="Compute DMC in Euro then convert to US Dollar using today's live exchange rate.",
         )
@@ -1289,7 +1289,7 @@ elif st.session_state.page == "Setup & Calculate":
             fig_pie.update_layout(title=dict(text="DMC Distribution by Category", font=dict(size=13, family="Plus Jakarta Sans")),
                 height=420, margin=dict(t=50, b=20, l=20, r=20), showlegend=False,
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, width="stretch")
 
         with col_c2:
             fig_bar = go.Figure()
@@ -1301,7 +1301,7 @@ elif st.session_state.page == "Setup & Calculate":
                 yaxis=dict(title=dict(text=f"{curr}/FH", font=dict(size=11))),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig_bar, use_container_width=True)
+            st.plotly_chart(fig_bar, width="stretch")
 
         # Category table
         st.markdown(f'<div class="sec-head">{svg_icon("file", 20)} <span>Category</span> Summary</div>', unsafe_allow_html=True)
@@ -1322,7 +1322,7 @@ elif st.session_state.page == "Setup & Calculate":
         st.dataframe(cat_disp.style.format({
             COL_LAB: f"{curr} {{:.2f}}", COL_MTR: f"{curr} {{:.2f}}",
             COL_TOT: f"{curr} {{:.2f}}", "% of Total": "{:.1f}%", "Adj. Factor": "x{:.4f}"}),
-            use_container_width=True, hide_index=True)
+            width="stretch", hide_index=True)
 
         # Category factor breakdown
         st.markdown(f'<div class="sec-head">{svg_icon("target", 20)} <span>Category-Specific</span> Adjustment Factors</div>', unsafe_allow_html=True)
@@ -1366,7 +1366,7 @@ elif st.session_state.page == "Setup & Calculate":
         st.dataframe(factor_df.style.format({
             "Env Factor": "x{:.4f}", "Gravel Factor": "x{:.4f}",
             "STOL Factor": "x{:.4f}", "Combined": "x{:.4f}"}),
-            use_container_width=True, hide_index=True)
+            width="stretch", hide_index=True)
 
         # Detail table
         st.markdown(f'<div class="sec-head">{svg_icon("search", 20)} <span>Detailed</span> Item Breakdown</div>', unsafe_allow_html=True)
@@ -1378,7 +1378,7 @@ elif st.session_state.page == "Setup & Calculate":
             COL_MAT_RAW: f"{curr} {{:,.2f}}", "Occ/yr (Cal)": "{:.4f}", "Occ/yr (Usage)": "{:.4f}",
             "Occ/yr (Used)": "{:.4f}", "Adj. Factor": "{:.4f}", COL_LAB: f"{curr} {{:.4f}}",
             COL_MTR: f"{curr} {{:.4f}}", COL_TOT: f"{curr} {{:.4f}}"}),
-            use_container_width=True, hide_index=True, height=600)
+            width="stretch", hide_index=True, height=600)
 
 
     else:
@@ -2065,7 +2065,7 @@ elif st.session_state.page == "Report":
             "Env x Gravel x STOL", "Weighted per category (see Calculate page)",
         ],
     }
-    st.dataframe(pd.DataFrame(params), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(params), width="stretch", hide_index=True)
 
 
 # Footer
