@@ -175,7 +175,7 @@ D328_300_JET_DATA = [
     {"inspection": "SSI-10",          "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 220,   "mat": 2991.68,    "category": "Structural Sampling (SSI)"},
     {"inspection": "SSI-10/5",        "int1": 120,  "param1": "Months", "int2": None,  "param2": None,      "mh": 5,     "mat": 0,          "category": "Structural Sampling (SSI)"},
     # Heavy Components (quantities applied per notes in Excel)
-    {"inspection": "Engine Change (2EA)",   "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",      "mh": 360,   "mat": 3304050.00, "category": "Engines"},
+    {"inspection": "Engine Change (2EA)",   "int1": None, "param1": None,     "int2": 8000,  "param2": "FH",      "mh": 360,   "mat": 7360000.00, "category": "Engines"},  # 4,000,000 USD per engine x 2 x 0.92 EUR/USD
     {"inspection": "APU Overhaul",          "int1": None, "param1": None,     "int2": 6000,  "param2": "APU Hrs", "mh": 16,    "mat": 123000.00,  "category": "APU"},
     {"inspection": "Landing Gear Overhaul", "int1": 144,  "param1": "Months", "int2": 22000, "param2": "FC",      "mh": 85,    "mat": 850000.00,  "category": "Landing Gear"},
     {"inspection": "Brakes (4EA)",          "int1": None, "param1": None,     "int2": 3000,  "param2": "FC",      "mh": 8,     "mat": 80000.00,   "category": "Landing Gear"},
